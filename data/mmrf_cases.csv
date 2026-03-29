@@ -1,0 +1,6 @@
+case_id,submitter_id,gender,race,ethnicity,vital_status,days_to_death,age_at_diagnosis,primary_diagnosis,tumor_stage,days_to_last_follow_up,days_to_recurrence
+0084e8b6-57fc-48b6-aa77-fec6e45161d2,MMRF_2240,male,white,not hispanic or latino,Alive,,24502,Multiple myeloma,,832.0,
+0094e07c-1595-402e-9d38-68b9cac71e7b,MMRF_1038,male,white,not hispanic or latino,Dead,1753.0,25255,Multiple myeloma,,1753.0,
+00e9cfa7-d2e1-46b8-b0ff-d7f1da925097,MMRF_1054,female,white,not hispanic or latino,Alive,,21310,Multiple myeloma,,1828.0,
+01489f5a-650e-4e15-aacf-a8463cbed03c,MMRF_2174,male,white,not hispanic or latino,Dead,425.0,31241,Multiple myeloma,,425.0,
+0165ada0-f393-4ffb-8f80-6d87f830584d,MMRF_2168,male,black or african american,not hispanic or latino,Alive,,18590,Multiple myeloma,,877.0,
