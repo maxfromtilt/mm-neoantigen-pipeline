@@ -18,18 +18,23 @@
 
 ## Executive Summary
 
-**What this is:** An open-source computational pipeline that designs personalised mRNA cancer vaccines for multiple myeloma patients, using the same methodology as BioNTech and Moderna's clinical trials.
+**What this is:** The first open-source, MM-specific neoantigen mRNA vaccine design pipeline. While BioNTech and Moderna have proprietary pipelines for their clinical trials (melanoma, pancreatic), no equivalent exists specifically for multiple myeloma patients outside those trials. This pipeline fills that gap.
 
-**What it does:** Takes a patient's tumour mutation data and produces a ranked list of vaccine targets with a complete mRNA vaccine construct design.
+**What makes it different:**
+- **MM-specific:** Incorporates MM driver gene biology (DIS3, KRAS, NRAS, RB1), MM plasma cell expression profiles, and myeloma-relevant clonality analysis -- not a generic cancer pipeline
+- **Multi-signal ranking:** Goes beyond binding affinity alone -- integrates 8 weighted factors (MHC-I binding, MHC-II/CD4+ support, clonality, expression, agretopicity, foreignness, immunogenicity, driver gene status) for clinically relevant candidate prioritisation
+- **Dual MHC-I/MHC-II screening:** Identifies candidates that engage both CD8+ cytotoxic and CD4+ helper T cells, associated with stronger and more durable immune responses
+- **Fully transparent and reproducible:** Complete source code, data, and methodology available for clinical and regulatory review -- unlike proprietary industry pipelines
+- **Patient-ready:** Accepts patient-specific WES and HLA typing data; produces a vaccine design in under 30 minutes on standard hardware, at no cost
 
-**Results at a glance:**
-- Tested on 2 real MM patients from the MMRF CoMMpass dataset
-- Found **156 and 140 MHC-I binding neoantigen candidates** per patient
-- Including **24 and 18 strong binders** (IC50 < 50 nM)
-- Identified **DIS3 I85T** (known MM driver, clonal) and **IDH2 R140Q** (known oncogenic hotspot, 47 nM strong binder) as top targets
-- Found **7 dual MHC-I/MHC-II binders** capable of activating both CD8+ and CD4+ T cells
+**Results at a glance (2 MMRF CoMMpass patients):**
+- 156 and 140 MHC-I binding neoantigen candidates per patient (1.0-1.2% binder rate, consistent with published benchmarks)
+- 24 and 18 strong binders (IC50 < 50 nM)
+- DIS3 I85T identified as top target for Patient 1 -- known MM driver, clonal, expressed. Ranked #1 by enhanced scoring despite not having the strongest binding, because it is present in every tumour cell
+- IDH2 R140Q at 47 nM for Patient 2 -- known oncogenic hotspot (also targeted by FDA-approved enasidenib in AML), clonal (CCF 0.99)
+- 7 dual MHC-I/MHC-II binders for Patient 1
 
-**What we need:** A clinician or researcher willing to review the methodology and discuss whether this warrants experimental validation. The pipeline is ready to accept patient-specific genomic data (WES + HLA typing) for any MM patient.
+**What we need:** A clinician or researcher willing to review the methodology and advise on whether this warrants experimental validation (ELISpot immunogenicity testing). The pipeline is ready to run on any MM patient's genomic data.
 
 **Motivation:** A family member has multiple myeloma. This is personal.
 

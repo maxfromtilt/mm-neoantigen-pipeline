@@ -119,9 +119,10 @@ def build_pdf():
     story.append(Paragraph("Executive Summary", styles['H2']))
 
     summary_text = [
-        ["<b>What this is</b>", "An open-source computational pipeline that designs personalised mRNA cancer vaccines for multiple myeloma patients, using the same methodology as BioNTech and Moderna's clinical trials."],
-        ["<b>Key results</b>", "Tested on 2 real MM patients. Found 156 and 140 MHC-I binding neoantigen candidates, including 24 and 18 strong binders (IC50 &lt; 50 nM). Top targets: DIS3 I85T (known MM driver, clonal) and IDH2 R140Q (known oncogenic hotspot, 47 nM). 7 dual MHC-I/MHC-II binders found."],
-        ["<b>What we need</b>", "A clinician or researcher willing to review the methodology and discuss whether this warrants experimental validation. The pipeline accepts patient-specific genomic data (WES + HLA typing) for any MM patient."],
+        ["<b>What this is</b>", "The first open-source, MM-specific neoantigen mRNA vaccine design pipeline. BioNTech and Moderna have proprietary pipelines for their trials (melanoma, pancreatic), but no equivalent exists specifically for multiple myeloma patients outside those trials. This fills that gap."],
+        ["<b>What's different</b>", "<b>MM-specific:</b> Incorporates MM driver gene biology, plasma cell expression profiles, myeloma-relevant clonality. <b>Multi-signal ranking:</b> 8 weighted factors beyond binding alone. <b>Dual MHC-I/II:</b> Identifies candidates engaging both CD8+ and CD4+ T cells. <b>Transparent:</b> Fully auditable, unlike proprietary industry pipelines. <b>Patient-ready:</b> Runs in 30 min on any patient's WES + HLA data, at no cost."],
+        ["<b>Key results</b>", "2 MMRF CoMMpass patients: 156 and 140 binders, 24 and 18 strong binders (IC50 &lt; 50 nM). DIS3 I85T ranked #1 (MM driver, clonal, expressed). IDH2 R140Q at 47 nM (oncogenic hotspot, CCF 0.99). 7 dual MHC-I/MHC-II binders found."],
+        ["<b>What we need</b>", "A clinician or researcher willing to review the methodology and advise whether this warrants experimental validation (ELISpot immunogenicity testing)."],
         ["<b>Motivation</b>", "A family member has multiple myeloma. This is personal."],
         ["<b>Code &amp; data</b>", "github.com/maxfromtilt/mm-neoantigen-pipeline"],
     ]
