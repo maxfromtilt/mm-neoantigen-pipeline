@@ -655,8 +655,8 @@ with tab0:
 
         st.markdown("")
         st.download_button(
-            "↓  Download example file (MMRF_1251)",
-            data=open("data/mmrf_1251_mutations.csv", "rb").read() if os.path.exists("data/mmrf_1251_mutations.csv") else b"",
+            "↓  Download example file",
+            data=open("data/example_mutations.csv", "rb").read() if os.path.exists("data/example_mutations.csv") else b"",
             file_name="example_mutations.csv",
             mime="text/csv",
         )
