@@ -1,0 +1,110 @@
+# =============================================================================
+# Multiple Myeloma Neoantigen Vaccine Pipeline Configuration
+# =============================================================================
+
+# --- GDC API Configuration ---
+gdc:
+  base_url: "https://api.gdc.cancer.gov"
+  project_id: "MMRF-COMMPASS"
+  # Data types to fetch
+  data_categories:
+    - "Simple Nucleotide Variation"
+    - "Transcriptome Profiling"
+    - "Copy Number Variation"
+  # File types of interest
+  data_types:
+    mutations: "Masked Somatic Mutation"
+    expression: "Gene Expression Quantification"
+    cnv: "Copy Number Segment"
+  # Maximum number of cases to fetch (set to null for all ~995)
+  max_cases: 50
+  # Page size for API requests
+  page_size: 100
+
+# --- Mutation Filtering ---
+mutations:
+  # Minimum variant allele frequency
+  min_vaf: 0.05
+  # Minimum read depth
+  min_depth: 10
+  # Variant classifications to include
+  classifications:
+    - "Missense_Mutation"
+    - "Frame_Shift_Del"
+    - "Frame_Shift_Ins"
+    - "In_Frame_Del"
+    - "In_Frame_Ins"
+    - "Nonstop_Mutation"
+  # Known MM driver genes to prioritize
+  driver_genes:
+    - "KRAS"
+    - "NRAS"
+    - "BRAF"
+    - "TP53"
+    - "DIS3"
+    - "FAM46C"
+    - "TRAF3"
+    - "RB1"
+    - "CYLD"
+    - "MAX"
+    - "IRF4"
+    - "FGFR3"
+    - "ATM"
+    - "ATR"
+
+# --- Neoantigen Prediction ---
+neoantigen:
+  # Peptide lengths to evaluate (MHC-I typically 8-11, MHC-II 11-20)
+  mhc_class_i:
+    peptide_lengths: [8, 9, 10, 11]
+    # IC50 binding affinity threshold in nM (lower = stronger binding)
+    binding_threshold: 500
+    # Strong binder threshold
+    strong_binding_threshold: 50
+  mhc_class_ii:
+    peptide_lengths: [15]
+    binding_threshold: 1000
+  # Common HLA alleles for population-level analysis
+  # (In a real patient scenario, you'd use their specific HLA type)
+  default_hla_alleles:
+    class_i:
+      - "HLA-A*02:01"
+      - "HLA-A*01:01"
+      - "HLA-A*03:01"
+      - "HLA-A*24:02"
+      - "HLA-B*07:02"
+      - "HLA-B*08:01"
+    class_ii:
+      - "HLA-DRB1*01:01"
+      - "HLA-DRB1*07:01"
+  # Minimum expression (TPM) for a gene to be considered
+  min_expression_tpm: 1.0
+
+# --- mRNA Vaccine Design ---
+vaccine:
+  # Maximum number of neoantigens per vaccine construct
+  max_neoantigens: 20
+  # Minimum number of neoantigens required
+  min_neoantigens: 5
+  # Linker sequence between epitopes (GSG linker)
+  linker_sequence: "GGSGGGGSGG"
+  # 5' UTR sequence (human alpha-globin)
+  five_prime_utr: "GCTTCTTGTTCTTTTGCAGAAGCTCAGAATAAACGCTCAACTTTGGCAGATCGG"
+  # Signal peptide (human tissue plasminogen activator)
+  signal_peptide: "MDAMKRGLCCVLLLCGAVFVSPSQEIHARFR"
+  # 3' UTR (AES-mtRNR1 combination, used in BioNTech vaccines)
+  three_prime_utr: "CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  # Codon optimization target organism
+  codon_optimization: "human"
+  # Poly-A tail length
+  poly_a_length: 120
+
+# --- Output ---
+output:
+  directory: "output"
+  # Generate detailed reports
+  detailed_reports: true
+  # Export formats
+  formats:
+    - "csv"
+    - "json"

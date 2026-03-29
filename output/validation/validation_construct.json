@@ -1,0 +1,27 @@
+{
+  "ordered_epitopes": [
+    "LVVVGAVGV",
+    "LLKYSNLLV"
+  ],
+  "epitope_order": [
+    0,
+    1
+  ],
+  "linker_sequence": "GGSGGGGSGG",
+  "signal_peptide": "MDAMKRGLCCVLLLCGAVFVSPSQEIHARFR",
+  "cassette_protein": "MDAMKRGLCCVLLLCGAVFVSPSQEIHARFRLVVVGAVGVGGSGGGGSGGLLKYSNLLV",
+  "cassette_protein_length": 59,
+  "mrna_length_nt": 397,
+  "gc_content": 0.3325,
+  "estimated_molecular_weight_da": 131010,
+  "estimated_molecular_weight_kda": 131.0,
+  "five_prime_utr": "GCTTCTTGTTCTTTTGCAGAAGCTCAGAATAAACGCTCAACTTTGGCAGATCGG",
+  "three_prime_utr": "CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "poly_a_length": 120,
+  "n_epitopes": 2,
+  "modifications": [
+    "5' Cap: m7GpppN (Cap1 structure)",
+    "All uridines: N1-methylpseudouridine (m1\u03a8)",
+    "Codon optimization: Human codon usage bias"
+  ]
+}

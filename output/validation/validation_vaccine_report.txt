@@ -1,0 +1,76 @@
+==============================================================================
+  PERSONALIZED mRNA CANCER VACCINE DESIGN REPORT
+  Multiple Myeloma — MMRF CoMMpass Neoantigen Pipeline
+==============================================================================
+
+──────────────────────────────────────────────────────────────────────────────
+  1. CONSTRUCT OVERVIEW
+──────────────────────────────────────────────────────────────────────────────
+  Number of epitopes:        2
+  Protein cassette length:   59 amino acids
+  mRNA length:               397 nucleotides
+  GC content:                33.2%
+  Estimated MW:              131.0 kDa
+  Linker sequence:           GGSGGGGSGG
+
+──────────────────────────────────────────────────────────────────────────────
+  2. mRNA ARCHITECTURE
+──────────────────────────────────────────────────────────────────────────────
+  5'Cap ─── 5'UTR ─── [Signal Peptide]─[Ep1]─[Linker]─[Ep2]─...─[EpN] ─── STOP ─── 3'UTR ─── AAAA...A
+
+  5' UTR:      GCTTCTTGTTCTTTTGCAGAAGCTCAGAATAAACGCTCAA...
+  Signal:      MDAMKRGLCCVLLLCGAVFVSPSQEIHARFR...
+  3' UTR:      CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAA...
+  Poly-A:      120 adenines
+
+──────────────────────────────────────────────────────────────────────────────
+  3. RNA MODIFICATIONS
+──────────────────────────────────────────────────────────────────────────────
+  • 5' Cap: m7GpppN (Cap1 structure)
+  • All uridines: N1-methylpseudouridine (m1Ψ)
+  • Codon optimization: Human codon usage bias
+
+──────────────────────────────────────────────────────────────────────────────
+  4. SELECTED EPITOPES (in construct order)
+──────────────────────────────────────────────────────────────────────────────
+    #  Gene       AA Change       Peptide        HLA              IC50(nM)  Score
+  ───  ────────── ─────────────── ────────────── ─────────────── ───────── ──────
+    1  KRAS       p.G12V          LVVVGAVGV      HLA-A*24:02         304.8   61.3
+    2  FAM46C     p.D249N         LLKYSNLLV      HLA-B*08:01         411.5   54.7
+
+──────────────────────────────────────────────────────────────────────────────
+  5. PROTEIN CASSETTE SEQUENCE
+──────────────────────────────────────────────────────────────────────────────
+      1  MDAMKRGLCCVLLLCGAVFVSPSQEIHARFRLVVVGAVGVGGSGGGGSGGLLKYSNLLV
+
+──────────────────────────────────────────────────────────────────────────────
+  6. MANUFACTURING NOTES
+──────────────────────────────────────────────────────────────────────────────
+  • In-vitro transcription (IVT) from linearized DNA template
+  • Use CleanCap AG for co-transcriptional 5' capping (Cap1)
+  • Substitute UTP with N1-methylpseudouridine-5'-triphosphate
+  • Purify by cellulose chromatography to remove dsRNA contaminants
+  • Formulate in lipid nanoparticles (LNP) for delivery
+  • Recommended LNP composition: ionizable lipid/DSPC/cholesterol/PEG-lipid
+  • Target dose range: 25-100 μg mRNA per injection
+  • Storage: -20°C (LNP formulated), -80°C (bulk mRNA)
+
+──────────────────────────────────────────────────────────────────────────────
+  7. CLINICAL CONSIDERATIONS
+──────────────────────────────────────────────────────────────────────────────
+  • This is a computationally designed research construct
+  • Patient-specific HLA typing is required for clinical use
+  • Preclinical immunogenicity testing (ELISpot, multimer staining) required
+  • Consider combination with checkpoint inhibitors (anti-PD-1/PD-L1)
+  • Multiple myeloma-specific: consider timing relative to ASCT
+  • Monitor for cytokine release syndrome (CRS)
+
+──────────────────────────────────────────────────────────────────────────────
+  DISCLAIMER
+──────────────────────────────────────────────────────────────────────────────
+  This vaccine design is generated for RESEARCH PURPOSES ONLY.
+  It has not been validated experimentally and is not intended for
+  clinical use. Any therapeutic application requires extensive
+  preclinical and clinical testing under appropriate regulatory oversight.
+
+==============================================================================

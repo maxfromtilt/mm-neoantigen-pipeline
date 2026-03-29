@@ -1,0 +1,134 @@
+{
+  "steps": {
+    "parsing": {
+      "input_mutations": 11,
+      "filtered_mutations": 11,
+      "candidates_generated": 392
+    },
+    "uniprot": {
+      "genes_with_sequences": 4
+    },
+    "binding": {
+      "predictions": 2352,
+      "binders": 6,
+      "strong_binders": 0
+    },
+    "external_validation": {
+      "cosmic_hotspots": 1896,
+      "iedb_validated": 390
+    },
+    "expression": {
+      "enriched": true
+    },
+    "safety": {
+      "screened": true
+    },
+    "vaccine_design": {
+      "n_epitopes": 2,
+      "mrna_length": 397,
+      "gc_content": 0.3325
+    }
+  },
+  "benchmark_results": [
+    {
+      "gene": "KRAS",
+      "mutation": "p.G12D",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 871.1,
+      "priority_score": 60.2,
+      "status": "CHECK"
+    },
+    {
+      "gene": "KRAS",
+      "mutation": "p.G12V",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 1175.9,
+      "priority_score": 74.0,
+      "status": "CHECK"
+    },
+    {
+      "gene": "NRAS",
+      "mutation": "p.Q61K",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 4535.9,
+      "priority_score": 70.8,
+      "status": "CHECK"
+    },
+    {
+      "gene": "NRAS",
+      "mutation": "p.Q61R",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 5270.0,
+      "priority_score": 68.1,
+      "status": "CHECK"
+    },
+    {
+      "gene": "BRAF",
+      "mutation": "p.V600E",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 4535.9,
+      "priority_score": 58.3,
+      "status": "CHECK"
+    },
+    {
+      "gene": "TP53",
+      "mutation": "p.R175H",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 7113.7,
+      "priority_score": 52.7,
+      "status": "CHECK"
+    },
+    {
+      "gene": "TP53",
+      "mutation": "p.R248W",
+      "expected_immunogenic": true,
+      "predicted_binder": false,
+      "best_ic50": 4535.9,
+      "priority_score": 65.1,
+      "status": "CHECK"
+    },
+    {
+      "gene": "DIS3",
+      "mutation": "p.R780K",
+      "expected_immunogenic": false,
+      "predicted_binder": false,
+      "best_ic50": 1366.2,
+      "priority_score": 53.0,
+      "status": "PASS"
+    },
+    {
+      "gene": "FAM46C",
+      "mutation": "p.D249N",
+      "expected_immunogenic": true,
+      "predicted_binder": true,
+      "best_ic50": 411.5,
+      "priority_score": 54.7,
+      "status": "PASS"
+    },
+    {
+      "gene": "TTN",
+      "mutation": "p.A1234V",
+      "expected_immunogenic": false,
+      "predicted_binder": false,
+      "best_ic50": 1012.1,
+      "priority_score": 40.9,
+      "status": "PASS"
+    },
+    {
+      "gene": "MUC16",
+      "mutation": "p.S5000L",
+      "expected_immunogenic": false,
+      "predicted_binder": false,
+      "best_ic50": 1366.2,
+      "priority_score": 60.8,
+      "status": "PASS"
+    }
+  ],
+  "summary": {}
+}

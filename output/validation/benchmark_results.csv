@@ -1,0 +1,12 @@
+gene,mutation,expected_immunogenic,predicted_binder,best_ic50,priority_score,status
+KRAS,p.G12D,True,False,871.1,60.2,CHECK
+KRAS,p.G12V,True,False,1175.9,74.0,CHECK
+NRAS,p.Q61K,True,False,4535.9,70.8,CHECK
+NRAS,p.Q61R,True,False,5270.0,68.1,CHECK
+BRAF,p.V600E,True,False,4535.9,58.3,CHECK
+TP53,p.R175H,True,False,7113.7,52.7,CHECK
+TP53,p.R248W,True,False,4535.9,65.1,CHECK
+DIS3,p.R780K,False,False,1366.2,53.0,PASS
+FAM46C,p.D249N,True,True,411.5,54.7,PASS
+TTN,p.A1234V,False,False,1012.1,40.9,PASS
+MUC16,p.S5000L,False,False,1366.2,60.8,PASS
