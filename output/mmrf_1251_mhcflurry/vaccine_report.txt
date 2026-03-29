@@ -1,0 +1,100 @@
+==============================================================================
+  PERSONALIZED mRNA CANCER VACCINE DESIGN REPORT
+  Multiple Myeloma — MMRF CoMMpass Neoantigen Pipeline
+==============================================================================
+
+──────────────────────────────────────────────────────────────────────────────
+  1. CONSTRUCT OVERVIEW
+──────────────────────────────────────────────────────────────────────────────
+  Number of epitopes:        20
+  Protein cassette length:   412 amino acids
+  mRNA length:               1456 nucleotides
+  GC content:                55.4%
+  Estimated MW:              480.5 kDa
+  Linker sequence:           GGSGGGGSGG
+
+──────────────────────────────────────────────────────────────────────────────
+  2. mRNA ARCHITECTURE
+──────────────────────────────────────────────────────────────────────────────
+  5'Cap ─── 5'UTR ─── [Signal Peptide]─[Ep1]─[Linker]─[Ep2]─...─[EpN] ─── STOP ─── 3'UTR ─── AAAA...A
+
+  5' UTR:      GCTTCTTGTTCTTTTGCAGAAGCTCAGAATAAACGCTCAA...
+  Signal:      MDAMKRGLCCVLLLCGAVFVSPSQEIHARFR...
+  3' UTR:      CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAA...
+  Poly-A:      120 adenines
+
+──────────────────────────────────────────────────────────────────────────────
+  3. RNA MODIFICATIONS
+──────────────────────────────────────────────────────────────────────────────
+  • 5' Cap: m7GpppN (Cap1 structure)
+  • All uridines: N1-methylpseudouridine (m1Ψ)
+  • Codon optimization: Human codon usage bias
+
+──────────────────────────────────────────────────────────────────────────────
+  4. SELECTED EPITOPES (in construct order)
+──────────────────────────────────────────────────────────────────────────────
+    #  Gene       AA Change       Peptide        HLA              IC50(nM)  Score
+  ───  ────────── ─────────────── ────────────── ─────────────── ───────── ──────
+    1  OR4K5      E196K           KLACLDSYIIK    HLA-A*03:01         170.8   64.8
+    2  RINT1      N574K           ALEVFAENK      HLA-A*03:01         329.3   61.8
+    3  TLN2       D106H           SVKTVMVDHSK    HLA-A*03:01         220.8   53.5
+    4  KALRN      S1866I          SLLAARQAI      HLA-A*02:01         130.3   63.2
+    5  TTC14      S671L           EPGSVRHSTL     HLA-B*07:02          70.1   62.7
+    6  MME        Y579F           LNYGGIFMV      HLA-A*02:01         119.8   61.9
+    7  ETV1       N233S           SPVYEHNTM      HLA-B*07:02          45.0   61.3
+    8  ETV1       N116S           ESCLYNVSAY     HLA-A*01:01         323.4   60.3
+    9  AHR        N108Y           RYGLNLQEGEF    HLA-A*24:02         180.6   59.9
+   10  DIS3       I85T            DPATRNVIV      HLA-B*07:02         369.3   58.9
+   11  VPS11      S773G           RGYLVQKLQK     HLA-A*03:01         324.5   58.7
+   12  ASPHD1     P243S           SSPLAPGCY      HLA-A*01:01         236.0   58.1
+   13  HS3ST1     F177Y           EYLVRDGRL      HLA-A*24:02         328.8   57.9
+   14  ZNF804B    C127S           ESVSGNGPAY     HLA-A*01:01         194.9   57.3
+   15  CD5        D32N            RLSWYDPNF      HLA-A*24:02         383.4   57.2
+   16  SYTL3      V512I           CLTLPIQQK      HLA-A*03:01         107.0   54.8
+   17  HMCN1      V2427I          TWFKDGWPI      HLA-A*24:02         102.5   49.5
+   18  KALRN      S200I           SAVHILSRL      HLA-A*02:01         453.7   48.6
+   19  OR6F1      R293H           FIYTLHNKEV     HLA-A*02:01         246.0   48.5
+   20  NME8       V529F           MILTKWNAF      HLA-A*24:02         274.1   59.5
+
+──────────────────────────────────────────────────────────────────────────────
+  5. PROTEIN CASSETTE SEQUENCE
+──────────────────────────────────────────────────────────────────────────────
+      1  MDAMKRGLCCVLLLCGAVFVSPSQEIHARFRKLACLDSYIIKGGSGGGGSGGALEVFAEN
+     61  KGGSGGGGSGGSVKTVMVDHSKGGSGGGGSGGSLLAARQAIGGSGGGGSGGEPGSVRHST
+    121  LGGSGGGGSGGLNYGGIFMVGGSGGGGSGGSPVYEHNTMGGSGGGGSGGESCLYNVSAYG
+    181  GSGGGGSGGRYGLNLQEGEFGGSGGGGSGGDPATRNVIVGGSGGGGSGGRGYLVQKLQKG
+    241  GSGGGGSGGSSPLAPGCYGGSGGGGSGGEYLVRDGRLGGSGGGGSGGESVSGNGPAYGGS
+    301  GGGGSGGRLSWYDPNFGGSGGGGSGGCLTLPIQQKGGSGGGGSGGTWFKDGWPIGGSGGG
+    361  GSGGSAVHILSRLGGSGGGGSGGFIYTLHNKEVGGSGGGGSGGMILTKWNAF
+
+──────────────────────────────────────────────────────────────────────────────
+  6. MANUFACTURING NOTES
+──────────────────────────────────────────────────────────────────────────────
+  • In-vitro transcription (IVT) from linearized DNA template
+  • Use CleanCap AG for co-transcriptional 5' capping (Cap1)
+  • Substitute UTP with N1-methylpseudouridine-5'-triphosphate
+  • Purify by cellulose chromatography to remove dsRNA contaminants
+  • Formulate in lipid nanoparticles (LNP) for delivery
+  • Recommended LNP composition: ionizable lipid/DSPC/cholesterol/PEG-lipid
+  • Target dose range: 25-100 μg mRNA per injection
+  • Storage: -20°C (LNP formulated), -80°C (bulk mRNA)
+
+──────────────────────────────────────────────────────────────────────────────
+  7. CLINICAL CONSIDERATIONS
+──────────────────────────────────────────────────────────────────────────────
+  • This is a computationally designed research construct
+  • Patient-specific HLA typing is required for clinical use
+  • Preclinical immunogenicity testing (ELISpot, multimer staining) required
+  • Consider combination with checkpoint inhibitors (anti-PD-1/PD-L1)
+  • Multiple myeloma-specific: consider timing relative to ASCT
+  • Monitor for cytokine release syndrome (CRS)
+
+──────────────────────────────────────────────────────────────────────────────
+  DISCLAIMER
+──────────────────────────────────────────────────────────────────────────────
+  This vaccine design is generated for RESEARCH PURPOSES ONLY.
+  It has not been validated experimentally and is not intended for
+  clinical use. Any therapeutic application requires extensive
+  preclinical and clinical testing under appropriate regulatory oversight.
+
+==============================================================================

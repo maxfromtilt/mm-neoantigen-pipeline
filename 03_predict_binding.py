@@ -180,49 +180,76 @@ def predict_binding_mhcflurry(peptides: List[str], hla_allele: str,
     """
     Predict binding using MHCflurry (if installed).
 
-    MHCflurry is a production-grade MHC-I binding prediction tool that uses
-    neural networks trained on experimental binding affinity data.
-
-    BATCH MODE: Passes all peptides in a single predictor.predict() call
-    for ~100x speedup vs one-at-a-time prediction.
+    Uses Class1AffinityPredictor (not Class1PresentationPredictor) for true
+    batch prediction. The Presentation predictor treats alleles as a genotype
+    (max 6), while the Affinity predictor accepts one allele per peptide,
+    enabling bulk predictions across thousands of peptides in a single call.
 
     Args:
         peptides: List of peptide sequences to predict
         hla_allele: HLA allele string (e.g. "HLA-A*02:01")
-        predictor: Pre-loaded predictor instance (avoids reloading per call)
+        predictor: Pre-loaded Class1AffinityPredictor instance
 
     Install: pip install mhcflurry && mhcflurry-downloads fetch
     """
     try:
-        from mhcflurry import Class1PresentationPredictor
+        from mhcflurry import Class1AffinityPredictor
         if predictor is None:
-            predictor = Class1PresentationPredictor.load()
+            predictor = Class1AffinityPredictor.load()
 
-        # Single batch call with all peptides and matching allele list
-        alleles = [hla_allele] * len(peptides)
-        pred_df = predictor.predict(
-            peptides=peptides,
-            alleles=alleles,
-        )
+        # Standard amino acids only -- MHCflurry rejects * X and other chars
+        STANDARD_AA = set("ACDEFGHIKLMNPQRSTVWY")
 
-        results = []
-        for i, row in pred_df.iterrows():
-            ic50 = row.get("mhcflurry_affinity", 50000)
-
-            if ic50 < 50:
-                classification = "strong_binder"
-            elif ic50 < 500:
-                classification = "weak_binder"
+        # Split peptides into clean (MHCflurry) and dirty (PSSM fallback)
+        clean_indices = []
+        dirty_indices = []
+        clean_peptides = []
+        for i, pep in enumerate(peptides):
+            if all(aa in STANDARD_AA for aa in pep.upper()):
+                clean_indices.append(i)
+                clean_peptides.append(pep)
             else:
-                classification = "non_binder"
+                dirty_indices.append(i)
 
-            results.append({
-                "binding_score": round(-math.log(max(ic50, 0.01) / 50000), 4),
-                "ic50_nM": round(ic50, 2),
-                "percentile_rank": round(row.get("mhcflurry_affinity_percentile", 50), 2),
-                "classification": classification,
-                "presentation_score": round(row.get("mhcflurry_presentation_score", 0), 4),
-            })
+        # Batch predict clean peptides with MHCflurry
+        mhcflurry_results = {}
+        if clean_peptides:
+            alleles = [hla_allele] * len(clean_peptides)
+            pred_df = predictor.predict_to_dataframe(
+                peptides=clean_peptides,
+                alleles=alleles,
+            )
+            for j, (_, row) in enumerate(pred_df.iterrows()):
+                ic50 = row.get("prediction", 50000)
+                if ic50 < 50:
+                    classification = "strong_binder"
+                elif ic50 < 500:
+                    classification = "weak_binder"
+                else:
+                    classification = "non_binder"
+                mhcflurry_results[clean_indices[j]] = {
+                    "binding_score": round(-math.log(max(ic50, 0.01) / 50000), 4),
+                    "ic50_nM": round(ic50, 2),
+                    "percentile_rank": round(row.get("prediction_percentile", 50), 2),
+                    "classification": classification,
+                }
+
+        # PSSM fallback for nonstandard peptides
+        pssm_results = {}
+        for i in dirty_indices:
+            pssm_results[i] = predict_binding_pssm(peptides[i], hla_allele)
+
+        # Reassemble in original order
+        results = []
+        for i in range(len(peptides)):
+            if i in mhcflurry_results:
+                results.append(mhcflurry_results[i])
+            else:
+                results.append(pssm_results[i])
+
+        if dirty_indices:
+            print(f"    {len(clean_peptides)} peptides via MHCflurry, "
+                  f"{len(dirty_indices)} nonstandard via PSSM fallback")
 
         return results
 
@@ -387,8 +414,8 @@ def run_binding_predictions(candidates_df: pd.DataFrame, config: dict) -> pd.Dat
     use_mhcflurry = False
     mhcflurry_predictor = None
     try:
-        from mhcflurry import Class1PresentationPredictor
-        mhcflurry_predictor = Class1PresentationPredictor.load()
+        from mhcflurry import Class1AffinityPredictor
+        mhcflurry_predictor = Class1AffinityPredictor.load()
         use_mhcflurry = True
         print(f"  MHCflurry loaded (production-grade batch predictions)")
     except ImportError:
