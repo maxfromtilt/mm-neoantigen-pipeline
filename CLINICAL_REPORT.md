@@ -16,6 +16,27 @@
 
 ---
 
+## Executive Summary
+
+**What this is:** An open-source computational pipeline that designs personalised mRNA cancer vaccines for multiple myeloma patients, using the same methodology as BioNTech and Moderna's clinical trials.
+
+**What it does:** Takes a patient's tumour mutation data and produces a ranked list of vaccine targets with a complete mRNA vaccine construct design.
+
+**Results at a glance:**
+- Tested on 2 real MM patients from the MMRF CoMMpass dataset
+- Found **156 and 140 MHC-I binding neoantigen candidates** per patient
+- Including **24 and 18 strong binders** (IC50 < 50 nM)
+- Identified **DIS3 I85T** (known MM driver, clonal) and **IDH2 R140Q** (known oncogenic hotspot, 47 nM strong binder) as top targets
+- Found **7 dual MHC-I/MHC-II binders** capable of activating both CD8+ and CD4+ T cells
+
+**What we need:** A clinician or researcher willing to review the methodology and discuss whether this warrants experimental validation. The pipeline is ready to accept patient-specific genomic data (WES + HLA typing) for any MM patient.
+
+**Motivation:** A family member has multiple myeloma. This is personal.
+
+**Full pipeline and data:** https://github.com/maxfromtilt/mm-neoantigen-pipeline
+
+---
+
 ## Abstract
 
 We present an open-source computational pipeline for designing personalised mRNA cancer vaccines targeting neoantigens in multiple myeloma (MM). Using somatic mutation data from the MMRF CoMMpass study and MHCflurry neural network binding predictions, we demonstrate end-to-end vaccine construct design for two MM patients. The pipeline identifies 156 and 140 MHC-I binding neoantigen candidates per patient respectively, including 24 and 18 strong binders (IC50 < 50 nM). Enhanced analysis incorporating MHC-II prediction, clonality estimation, gene expression filtering, and driver gene prioritisation produces clinically relevant candidate rankings. Notably, the pipeline identifies DIS3 I85T (a known MM driver) and IDH2 R140Q (a known oncogenic hotspot) as top vaccine targets. Seven dual MHC-I/MHC-II binding candidates are identified for Patient 1, suggesting potential for coordinated CD4+/CD8+ T cell responses. The pipeline follows the same methodological framework used in published clinical trials by BioNTech and Moderna, and is designed to accept patient-specific genomic data for personalised vaccine design.

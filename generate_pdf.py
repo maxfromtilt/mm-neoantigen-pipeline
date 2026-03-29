@@ -115,6 +115,31 @@ def build_pdf():
     ))
     story.append(Spacer(1, 16))
 
+    # Executive Summary box
+    story.append(Paragraph("Executive Summary", styles['H2']))
+
+    summary_text = [
+        ["<b>What this is</b>", "An open-source computational pipeline that designs personalised mRNA cancer vaccines for multiple myeloma patients, using the same methodology as BioNTech and Moderna's clinical trials."],
+        ["<b>Key results</b>", "Tested on 2 real MM patients. Found 156 and 140 MHC-I binding neoantigen candidates, including 24 and 18 strong binders (IC50 &lt; 50 nM). Top targets: DIS3 I85T (known MM driver, clonal) and IDH2 R140Q (known oncogenic hotspot, 47 nM). 7 dual MHC-I/MHC-II binders found."],
+        ["<b>What we need</b>", "A clinician or researcher willing to review the methodology and discuss whether this warrants experimental validation. The pipeline accepts patient-specific genomic data (WES + HLA typing) for any MM patient."],
+        ["<b>Motivation</b>", "A family member has multiple myeloma. This is personal."],
+        ["<b>Code &amp; data</b>", "github.com/maxfromtilt/mm-neoantigen-pipeline"],
+    ]
+
+    summary_table_data = [[Paragraph(row[0], styles['CellBold']), Paragraph(row[1], styles['CellStyle'])] for row in summary_text]
+    ts = Table(summary_table_data, colWidths=[90, 370])
+    ts.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BLUE),
+        ('BOX', (0, 0), (-1, -1), 1.5, BLUE),
+        ('GRID', (0, 0), (-1, -1), 0.5, BORDER_GREY),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    story.append(ts)
+    story.append(Spacer(1, 16))
+
     # Abstract
     story.append(Paragraph("Abstract", styles['H2']))
     story.append(Paragraph(
