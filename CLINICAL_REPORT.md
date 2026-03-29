@@ -36,7 +36,7 @@
 
 **What we need:** A clinician or researcher willing to review the methodology and advise on whether this warrants experimental validation (ELISpot immunogenicity testing). The pipeline is ready to run on any MM patient's genomic data.
 
-**Motivation:** A family member has multiple myeloma. This is personal.
+**How to use:** Visit https://mm-vaccine.streamlit.app -- upload a somatic mutation CSV (gene_symbol, aa_change columns) and the pipeline will analyse it automatically. Pre-computed results for 5 MMRF CoMMpass patients are available to explore immediately.
 
 **Live dashboard:** https://mm-vaccine.streamlit.app
 

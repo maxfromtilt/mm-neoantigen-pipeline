@@ -123,7 +123,7 @@ def build_pdf():
         ["<b>What's different</b>", "<b>MM-specific:</b> Incorporates MM driver gene biology, plasma cell expression profiles, myeloma-relevant clonality. <b>Multi-signal ranking:</b> 8 weighted factors beyond binding alone. <b>Dual MHC-I/II:</b> Identifies candidates engaging both CD8+ and CD4+ T cells. <b>Transparent:</b> Fully auditable, unlike proprietary industry pipelines. <b>Patient-ready:</b> Runs in 30 min on any patient's WES + HLA data, at no cost."],
         ["<b>Key results</b>", "2 MMRF CoMMpass patients: 156 and 140 binders, 24 and 18 strong binders (IC50 &lt; 50 nM). DIS3 I85T ranked #1 (MM driver, clonal, expressed). IDH2 R140Q at 47 nM (oncogenic hotspot, CCF 0.99). 7 dual MHC-I/MHC-II binders found."],
         ["<b>What we need</b>", "A clinician or researcher willing to review the methodology and advise whether this warrants experimental validation (ELISpot immunogenicity testing)."],
-        ["<b>Motivation</b>", "A family member has multiple myeloma. This is personal."],
+        ["<b>How to use</b>", "Visit <b>mm-vaccine.streamlit.app</b> — upload a somatic mutation CSV (gene_symbol, aa_change columns) and the pipeline analyses it automatically. Pre-computed results for 5 MMRF CoMMpass patients available to explore immediately."],
         ["<b>Code &amp; data</b>", "github.com/maxfromtilt/mm-neoantigen-pipeline"],
     ]
 
