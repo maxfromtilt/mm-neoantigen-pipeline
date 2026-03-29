@@ -244,7 +244,7 @@ def run_uploaded_pipeline(uploaded_file):
 
     # Step 3: Display results
     st.markdown("---")
-    st.subheader("🧬 Analysis Results")
+    st.subheader("⟠  Analysis Results")
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Predictions", f"{len(results_df):,}")
@@ -254,7 +254,7 @@ def run_uploaded_pipeline(uploaded_file):
 
     st.markdown(
         '<div class="highlight-box">'
-        '<b>⚠️ Note:</b> These predictions use the built-in PSSM model for speed. '
+        '<b>▲  Note:</b> These predictions use the built-in PSSM model for speed. '
         'For production-grade results, run the pipeline locally with MHCflurry '
         '(neural network trained on 350,000+ experimental measurements). '
         'PSSM predictions are approximate and should be validated.'
@@ -311,7 +311,7 @@ def run_uploaded_pipeline(uploaded_file):
     # Download results
     csv_out = results_df.to_csv(index=False)
     st.download_button(
-        "📥 Download Full Results (CSV)",
+        "↓  Download Full Results (CSV)",
         data=csv_out,
         file_name="neoantigen_analysis_results.csv",
         mime="text/csv",
@@ -321,7 +321,7 @@ def run_uploaded_pipeline(uploaded_file):
     if not binders.empty:
         binders_csv = binders.to_csv(index=False)
         st.download_button(
-            "📥 Download Binders Only (CSV)",
+            "↓  Download Binders Only (CSV)",
             data=binders_csv,
             file_name="neoantigen_binders.csv",
             mime="text/csv",
@@ -331,7 +331,7 @@ def run_uploaded_pipeline(uploaded_file):
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
     page_title="MM Neoantigen Vaccine Designer",
-    page_icon="🧬",
+    page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -444,7 +444,7 @@ def get_available_patients():
 # ── Sidebar ──────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.markdown("## 🧬 MM Vaccine Designer")
+    st.markdown("## ⟠  MM Vaccine Designer")
     st.markdown("---")
 
     patients = get_available_patients()
@@ -480,8 +480,8 @@ with st.sidebar:
     st.markdown(
         "Open-source pipeline for designing personalised "
         "mRNA cancer vaccines for multiple myeloma.\n\n"
-        "[📄 Paper](https://github.com/maxfromtilt/mm-neoantigen-pipeline/blob/main/CLINICAL_REPORT.md) · "
-        "[💻 Code](https://github.com/maxfromtilt/mm-neoantigen-pipeline)"
+        "[▫  Paper](https://github.com/maxfromtilt/mm-neoantigen-pipeline/blob/main/CLINICAL_REPORT.md) · "
+        "[▪  Code](https://github.com/maxfromtilt/mm-neoantigen-pipeline)"
     )
     st.markdown(
         '<div class="disclaimer">'
@@ -515,7 +515,7 @@ if not df_filtered.empty:
 # MAIN DASHBOARD
 # ══════════════════════════════════════════════════════════════════════
 
-st.markdown(f'<p class="main-header">🧬 Neoantigen Vaccine Design: {selected_patient.upper().replace("_", " ")}</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="main-header">⟠  Neoantigen Vaccine Design: {selected_patient.upper().replace("_", " ")}</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Personalised mRNA cancer vaccine pipeline for multiple myeloma</p>', unsafe_allow_html=True)
 
 # ── Key Metrics Row ──────────────────────────────────────────────────
@@ -546,13 +546,13 @@ if not df_enhanced.empty:
 # ── Tabs ─────────────────────────────────────────────────────────────
 
 tab0, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "🔬 Analyse New Patient",
-    "📊 Overview",
-    "🎯 Top Candidates",
-    "🧪 Binding Analysis",
-    "🧬 HLA Coverage",
-    "💉 Vaccine Construct",
-    "📋 Full Data",
+    "⌬  Analyse New Patient",
+    "▤  Overview",
+    "◎  Top Candidates",
+    "⚗  Binding Analysis",
+    "⟠  HLA Coverage",
+    "⊕  Vaccine Construct",
+    "≡  Full Data",
 ])
 
 
@@ -586,7 +586,7 @@ with tab0:
 
         st.markdown("")
         st.download_button(
-            "📥 Download example file (MMRF_1251)",
+            "↓  Download example file (MMRF_1251)",
             data=open("data/mmrf_1251_mutations.csv", "rb").read() if os.path.exists("data/mmrf_1251_mutations.csv") else b"",
             file_name="example_mutations.csv",
             mime="text/csv",
@@ -699,7 +699,7 @@ with tab1:
 
                 st.markdown(
                     '<div class="highlight-box">'
-                    '<b>💡 Key insight:</b> The best vaccine targets are in the '
+                    '<b>▸  Key insight:</b> The best vaccine targets are in the '
                     '<b>top-right quadrant</b> — high clonality (present in all tumour cells) '
                     'AND strong binding (low IC50). These are mutations the immune system '
                     'can target effectively and that exist in every cancer cell.'
@@ -766,7 +766,7 @@ with tab2:
 
         # Dual binders section
         if not df_dual.empty:
-            st.subheader("🎯 Dual MHC-I / MHC-II Binders")
+            st.subheader("◎  Dual MHC-I / MHC-II Binders")
             st.markdown(
                 "These candidates engage **both** CD8+ cytotoxic and CD4+ helper T cells, "
                 "which is associated with stronger and more durable immune responses."
@@ -992,7 +992,7 @@ with tab5:
         )
 
     if vaccine_report:
-        with st.expander("📄 Full Vaccine Design Report"):
+        with st.expander("▫  Full Vaccine Design Report"):
             st.text(vaccine_report)
 
 
@@ -1030,14 +1030,14 @@ with tab6:
         # Download button
         csv = df_enhanced.to_csv(index=False)
         st.download_button(
-            label="📥 Download Full Results (CSV)",
+            label="↓  Download Full Results (CSV)",
             data=csv,
             file_name=f"{selected_patient}_enhanced_results.csv",
             mime="text/csv",
         )
 
     st.markdown("---")
-    st.markdown("💡 **To analyse your own patient data**, use the **🔬 Analyse New Patient** tab.")
+    st.markdown("▸  **To analyse your own patient data**, use the **⌬  Analyse New Patient** tab.")
 
 
 # ── Footer ───────────────────────────────────────────────────────────
@@ -1045,7 +1045,7 @@ with tab6:
 st.markdown("---")
 st.markdown(
     '<div class="disclaimer">'
-    '<b>⚠️ Research Use Only.</b> This pipeline is for computational research purposes only. '
+    '<b>▲  Research Use Only.</b> This pipeline is for computational research purposes only. '
     'Vaccine constructs have not been experimentally validated. Any therapeutic application '
     'requires preclinical testing, regulatory approval, and clinical oversight by qualified '
     'medical professionals. This tool does not provide medical advice.'
