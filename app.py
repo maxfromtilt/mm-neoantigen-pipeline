@@ -327,6 +327,75 @@ def run_uploaded_pipeline(uploaded_file):
             mime="text/csv",
         )
 
+    # Email results
+    st.markdown("---")
+    st.subheader("Send Results")
+    col_email, col_share = st.columns(2)
+
+    with col_email:
+        email_addr = st.text_input("Email address (to receive results)")
+        if email_addr and st.button("Send Results via Email"):
+            st.info(
+                f"Email delivery is not yet connected to a mail server. "
+                f"For now, please download the CSV above and send to **{email_addr}** manually. "
+                f"Automated email delivery coming soon."
+            )
+
+    with col_share:
+        st.markdown("#### Contribute to Research")
+        st.markdown(
+            "Help build the largest open MM neoantigen database. "
+            "Your results will be **fully anonymised** before sharing:"
+        )
+        st.markdown(
+            "- All patient identifiers removed\n"
+            "- Only gene, mutation, peptide, HLA, and binding data stored\n"
+            "- No raw sequences or genomic coordinates\n"
+            "- No personal or clinical information\n"
+            "- Data used solely to improve neoantigen prediction for MM"
+        )
+
+        opt_in = st.checkbox(
+            "I consent to sharing anonymised neoantigen predictions with the MM Vaccine Research Database",
+            value=False,
+        )
+
+        if opt_in and st.button("Share Anonymised Results"):
+            # Anonymise: keep only scientific columns
+            anon_cols = ["gene_symbol", "aa_change", "mutant_peptide",
+                         "hla_allele", "ic50_nM", "classification",
+                         "agretopicity", "is_driver_gene"]
+            anon_available = [c for c in anon_cols if c in results_df.columns]
+            anon_df = results_df[anon_available].copy()
+            # Remove any residual patient identifiers
+            for col in ["case_id", "submitter_id", "ssm_id", "patient_id"]:
+                if col in anon_df.columns:
+                    anon_df = anon_df.drop(columns=[col])
+
+            # Save to community database (GitHub-based for now)
+            community_dir = "community"
+            os.makedirs(community_dir, exist_ok=True)
+
+            # Generate anonymous submission ID
+            import hashlib, time
+            sub_id = hashlib.sha256(f"{time.time()}".encode()).hexdigest()[:12]
+            sub_path = os.path.join(community_dir, f"submission_{sub_id}.csv")
+
+            try:
+                anon_df.to_csv(sub_path, index=False)
+                st.success(
+                    f"Thank you! Your anonymised results ({len(anon_df)} predictions) "
+                    f"have been submitted to the MM Neoantigen Research Database. "
+                    f"Submission ID: {sub_id}"
+                )
+                st.balloons()
+            except Exception as e:
+                st.warning(
+                    f"Could not save to server storage (Streamlit Cloud limitation). "
+                    f"To contribute, please email the downloaded CSV to: "
+                    f"robert.doran@tilt.ie with subject 'MM Neoantigen Data Contribution'"
+                )
+
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
