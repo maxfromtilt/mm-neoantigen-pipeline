@@ -545,7 +545,8 @@ if not df_enhanced.empty:
 
 # ── Tabs ─────────────────────────────────────────────────────────────
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "🔬 Analyse New Patient",
     "📊 Overview",
     "🎯 Top Candidates",
     "🧪 Binding Analysis",
@@ -553,6 +554,46 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "💉 Vaccine Construct",
     "📋 Full Data",
 ])
+
+
+# ── Tab 0: Analyse New Patient ────────────────────────────────────────
+
+with tab0:
+    st.subheader("Upload Patient Mutation Data")
+    st.markdown(
+        "Upload a somatic mutation CSV file to design a personalised neoantigen vaccine. "
+        "The pipeline will automatically parse mutations, predict MHC binding across 6 HLA alleles, "
+        "and rank vaccine candidates."
+    )
+
+    col_upload, col_format = st.columns([1, 1])
+
+    with col_upload:
+        uploaded_file = st.file_uploader(
+            "Drop your mutation CSV here",
+            type=["csv"],
+            help="Accepts MMRF CoMMpass format, MAF, or VCF-derived tables",
+        )
+
+    with col_format:
+        st.markdown("**Required columns:**")
+        st.markdown("- `gene_symbol` — gene name (e.g. DIS3, KRAS)")
+        st.markdown("- `aa_change` — amino acid change (e.g. E196K or p.E196K)")
+        st.markdown("")
+        st.markdown("**Optional columns:**")
+        st.markdown("- `consequence_type` — filters to missense/frameshift")
+        st.markdown("- `chromosome`, `start_position`")
+
+        st.markdown("")
+        st.download_button(
+            "📥 Download example file (MMRF_1251)",
+            data=open("data/mmrf_1251_mutations.csv", "rb").read() if os.path.exists("data/mmrf_1251_mutations.csv") else b"",
+            file_name="example_mutations.csv",
+            mime="text/csv",
+        )
+
+    if uploaded_file:
+        run_uploaded_pipeline(uploaded_file)
 
 
 # ── Tab 1: Overview ──────────────────────────────────────────────────
@@ -995,23 +1036,8 @@ with tab6:
             mime="text/csv",
         )
 
-    # ── Upload & Analyse ────────────────────────────────────────────
     st.markdown("---")
-    st.subheader("🔬 Analyse Your Own Patient Data")
-    st.markdown(
-        "Upload a somatic mutation CSV to run the full pipeline. "
-        "Required columns: **gene_symbol**, **aa_change**, **consequence_type**. "
-        "Optional: **chromosome**, **start_position**, **reference_allele**, **tumor_allele**."
-    )
-
-    uploaded_file = st.file_uploader(
-        "Upload mutation data (CSV)",
-        type=["csv"],
-        help="Accepts MMRF CoMMpass format, MAF, or VCF-derived tables",
-    )
-
-    if uploaded_file:
-        run_uploaded_pipeline(uploaded_file)
+    st.markdown("💡 **To analyse your own patient data**, use the **🔬 Analyse New Patient** tab.")
 
 
 # ── Footer ───────────────────────────────────────────────────────────
