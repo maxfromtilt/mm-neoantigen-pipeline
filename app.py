@@ -203,6 +203,11 @@ def run_uploaded_pipeline(uploaded_file):
     candidates_df = pd.DataFrame(all_candidates)
     n_candidates = len(candidates_df)
     status.info(f"Generated {n_candidates} peptide candidates from {len(raw_df)} mutations")
+    st.caption(
+        "⚠️  Peptide flanking sequences are approximated from position context (seeded by mutation position). "
+        "For highest accuracy, run the pipeline locally with full protein sequences via UniProt lookup — "
+        "see the GitHub repo for instructions."
+    )
 
     # Step 2: Binding predictions
     progress.progress(0, text="Running binding predictions...")
@@ -327,19 +332,18 @@ def run_uploaded_pipeline(uploaded_file):
             mime="text/csv",
         )
 
-    # Email results
+    # Full results download
     st.markdown("---")
-    st.subheader("Send Results")
-    col_email, col_share = st.columns(2)
+    full_csv = results_df.to_csv(index=False)
+    st.download_button(
+        "↓  Download Full Results (CSV)",
+        data=full_csv,
+        file_name="neoantigen_full_results.csv",
+        mime="text/csv",
+    )
 
-    with col_email:
-        email_addr = st.text_input("Email address (to receive results)")
-        if email_addr and st.button("Send Results via Email"):
-            st.info(
-                f"Email delivery is not yet connected to a mail server. "
-                f"For now, please download the CSV above and send to **{email_addr}** manually. "
-                f"Automated email delivery coming soon."
-            )
+    st.subheader("Contribute to Research")
+    col_share, _ = st.columns([2, 1])
 
     with col_share:
         st.markdown("#### Contribute to Research")

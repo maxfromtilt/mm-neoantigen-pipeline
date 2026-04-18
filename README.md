@@ -106,6 +106,23 @@ The construct follows established mRNA vaccine architecture:
 - PyYAML, tqdm
 - **Optional:** [MHCflurry](https://github.com/openvax/mhcflurry) for production-grade binding predictions
 
+## Live Dashboard
+
+The dashboard is hosted at **https://mm-vaccine.streamlit.app** via Streamlit Community Cloud (free tier).
+
+### Keeping it awake
+
+Streamlit Cloud free tier apps sleep after ~7 days of inactivity and can take 30-60 seconds to wake on first visit. To keep the dashboard consistently responsive:
+
+**Option A — UptimeRobot (free, recommended)**
+1. Create a free account at [uptimerobot.com](https://uptimerobot.com)
+2. Add a new HTTP(S) monitor pointing to: `https://mm-vaccine.streamlit.app`
+3. Set check interval to 10 minutes
+4. This pings the app regularly and prevents it sleeping
+
+**Option B — Streamlit Community Cloud paid tier**
+Upgrade at [share.streamlit.io](https://share.streamlit.io) for always-on hosting.
+
 ## Disclaimer
 
 This pipeline is for **research and educational purposes only**. The vaccine designs are computationally generated and have not been experimentally validated. Clinical application requires extensive preclinical testing, regulatory approval, and patient-specific HLA typing. This tool is not a medical device and should not be used for clinical decision-making.

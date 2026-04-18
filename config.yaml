@@ -51,6 +51,7 @@ mutations:
     - "FGFR3"
     - "ATM"
     - "ATR"
+    - "PRDM1"
 
 # --- Neoantigen Prediction ---
 neoantigen:
