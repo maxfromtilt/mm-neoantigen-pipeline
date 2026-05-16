@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.0.4"
+__version__ = "2.0.5"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -405,7 +405,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.0.4",
+    page_title="MM Neoantigen Vaccine Designer v2.0.5",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -419,7 +419,7 @@ import sys
 sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
-st.sidebar.markdown("**Version 2.0.4** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
+st.sidebar.markdown("**Version 2.0.5** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
@@ -550,29 +550,9 @@ with st.sidebar:
         format_func=lambda x: x.upper().replace("_", " "),
     )
 
-    st.markdown("---")
-    st.markdown("### Filters")
-
-    ic50_threshold = st.slider(
-        "Max IC50 (nM)",
-        min_value=50, max_value=5000, value=500, step=50,
-        help="Filter candidates by MHC-I binding affinity"
-    )
-
-    show_clonal_only = st.checkbox(
-        "Clonal mutations only",
-        value=False,
-        help="Show only mutations present in all tumour cells"
-    )
-
-    show_drivers_only = st.checkbox(
-        "Driver genes only",
-        value=False,
-        help="Show only known MM driver gene mutations"
-    )
-
 
     st.markdown("---")
+
     with st.expander("How to Use / What It Does"):
         st.markdown("### What is this?")
         st.markdown(
@@ -628,6 +608,29 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### About")
+    st.markdown("---")
+    st.markdown("### Filters")
+
+    ic50_threshold = st.slider(
+        "Max IC50 (nM)",
+        min_value=50, max_value=5000, value=500, step=50,
+        help="Filter candidates by MHC-I binding affinity"
+    )
+
+    show_clonal_only = st.checkbox(
+        "Clonal mutations only",
+        value=False,
+        help="Show only mutations present in all tumour cells"
+    )
+
+    show_drivers_only = st.checkbox(
+        "Driver genes only",
+        value=False,
+        help="Show only known MM driver gene mutations"
+    )
+
+
+    st.markdown("---")
     st.markdown(
         "Open-source pipeline for designing personalised "
         "mRNA cancer vaccines for multiple myeloma.\n\n"
