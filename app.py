@@ -409,7 +409,14 @@ st.set_page_config(
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
-)
+)# ── Global error handler ─────────────────────────────────────────────
+def handle_error(exctype, value, tb):
+    st.error(f"An error occurred: {str(value)}")
+    st.info("If this persists, try reloading the page or switching patient.")
+    print(f"ERROR: {exctype.__name__}: {value}", file=sys.stderr)
+
+import sys
+sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
 st.sidebar.markdown("**Version 2.0.0** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
