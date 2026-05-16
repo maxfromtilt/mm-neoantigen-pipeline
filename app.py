@@ -491,7 +491,10 @@ def load_patient_data(patient_id: str, data_type: str = "enhanced") -> pd.DataFr
     }
     path = paths.get(data_type, "")
     if os.path.exists(path):
-        return pd.read_csv(path)
+        try:
+            return pd.read_csv(path)
+        except pd.errors.EmptyDataError:
+            return pd.DataFrame()
     return pd.DataFrame()
 
 
