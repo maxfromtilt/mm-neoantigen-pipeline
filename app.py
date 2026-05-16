@@ -1,4 +1,6 @@
 """
+
+__version__ = "2.0.0"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -403,11 +405,14 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer",
+    page_title="MM Neoantigen Vaccine Designer v2.0.0",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# ── Version ─────────────────────────────────────────────────────────
+st.sidebar.markdown("**Version 2.0.0** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
