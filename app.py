@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -852,11 +852,11 @@ vaccine_report = load_vaccine_report(selected_patient)
 
 df_filtered = df_enhanced.copy()
 if not df_filtered.empty:
-    df_filtered = df_filtered[df_filtered["ic50_nM"] <= ic50_threshold]
+    df_filtered = df_filtered[df_filtered["ic50_nM"].fillna(99999) <= ic50_threshold]
     if show_clonal_only and "clonality" in df_filtered.columns:
-        df_filtered = df_filtered[df_filtered["clonality"] == "clonal"]
+        df_filtered = df_filtered[df_filtered.get("clonality", "") == "clonal"]
     if show_drivers_only and "is_driver_gene" in df_filtered.columns:
-        df_filtered = df_filtered[df_filtered["is_driver_gene"] == True]
+        df_filtered = df_filtered[df_filtered.get("is_driver_gene", False) == True]
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -870,14 +870,14 @@ st.markdown('<p class="sub-header">Personalised mRNA cancer vaccine pipeline for
 
 if not df_enhanced.empty:
     total_predictions = len(df_enhanced)
-    total_binders = len(df_enhanced[df_enhanced["ic50_nM"] < 500])
-    strong_binders = len(df_enhanced[df_enhanced["ic50_nM"] < 50])
+    total_binders = len(df_enhanced[df_enhanced["ic50_nM"].fillna(99999) < 500])
+    strong_binders = len(df_enhanced[df_enhanced["ic50_nM"].fillna(99999) < 50])
     n_dual = len(df_dual) if not df_dual.empty else 0
 
     clonal_count = 0
     if "clonality" in df_enhanced.columns:
         clonal_count = len(df_enhanced[
-            (df_enhanced["clonality"] == "clonal") &
+            (df_enhanced.get("clonality", "") == "clonal") &
             (df_enhanced["ic50_nM"] < 500)
         ])
 
@@ -1057,7 +1057,7 @@ with tab1:
         with col_left:
             st.subheader("Binding Affinity Distribution")
 
-            binders_df = df_enhanced[df_enhanced["ic50_nM"] < 5000].copy()
+            binders_df = df_enhanced[df_enhanced["ic50_nM"].fillna(99999) < 5000].copy()
             binders_df["Binding Category"] = binders_df["ic50_nM"].apply(classify_binding)
 
             fig_hist = px.histogram(
@@ -1120,7 +1120,7 @@ with tab1:
         if "clonality" in df_enhanced.columns:
             st.subheader("Mutation Clonality vs Binding Affinity")
 
-            binders_with_clonality = df_enhanced[df_enhanced["ic50_nM"] < 2000].copy()
+            binders_with_clonality = df_enhanced[df_enhanced["ic50_nM"].fillna(99999) < 2000].copy()
             if not binders_with_clonality.empty and "cancer_cell_fraction" in binders_with_clonality.columns:
                 fig_scatter = px.scatter(
                     binders_with_clonality,
@@ -1278,7 +1278,7 @@ with tab3:
         with col_a:
             st.subheader("MHC-I Binding by Gene")
 
-            binders = df_enhanced[df_enhanced["ic50_nM"] < 500].copy()
+            binders = df_enhanced[df_enhanced["ic50_nM"].fillna(99999) < 500].copy()
             if not binders.empty:
                 gene_counts = binders.groupby("gene_symbol").agg(
                     n_binders=("ic50_nM", "count"),
@@ -1306,7 +1306,7 @@ with tab3:
             st.subheader("Binding Affinity by HLA Allele")
 
             if "hla_allele" in df_enhanced.columns:
-                hla_binders = df_enhanced[df_enhanced["ic50_nM"] < 500]
+                hla_binders = df_enhanced[df_enhanced["ic50_nM"].fillna(99999) < 500]
                 if not hla_binders.empty:
                     fig_box = px.box(
                         hla_binders,
@@ -1365,9 +1365,9 @@ with tab4:
 
         coverage_data = []
         for allele, freq in hla_freqs.items():
-            allele_data = df_enhanced[df_enhanced["hla_allele"] == allele]
-            binders = allele_data[allele_data["ic50_nM"] < 500]
-            strong = allele_data[allele_data["ic50_nM"] < 50]
+            allele_data = df_enhanced[df_enhanced["hla_allele"].fillna("") == allele]
+            binders = allele_data[allele_data["ic50_nM"].fillna(99999) < 500]
+            strong = allele_data[allele_data["ic50_nM"].fillna(99999) < 50]
             coverage_data.append({
                 "HLA Allele": allele,
                 "Population Frequency": f"{freq:.0%}",
@@ -1384,9 +1384,9 @@ with tab4:
         for allele in hla_freqs:
             for cat in ["Strong Binder", "Weak Binder"]:
                 if cat == "Strong Binder":
-                    count = len(df_enhanced[(df_enhanced["hla_allele"] == allele) & (df_enhanced["ic50_nM"] < 50)])
+                    count = len(df_enhanced[(df_enhanced["hla_allele"].fillna("") == allele) & (df_enhanced["ic50_nM"].fillna(99999) < 50)])
                 else:
-                    count = len(df_enhanced[(df_enhanced["hla_allele"] == allele) & (df_enhanced["ic50_nM"] >= 50) & (df_enhanced["ic50_nM"] < 500)])
+                    count = len(df_enhanced[(df_enhanced["hla_allele"].fillna("") == allele) & (df_enhanced["ic50_nM"].fillna(99999) >= 50) & (df_enhanced["ic50_nM"].fillna(99999) < 500)])
                 if count > 0:
                     allele_binder_data.append({
                         "Allele": allele.replace("HLA-", ""),
@@ -1411,7 +1411,7 @@ with tab4:
             st.plotly_chart(fig_sun, use_container_width=True)
 
         # Population coverage estimate
-        covered_alleles = [a for a in hla_freqs if len(df_enhanced[(df_enhanced["hla_allele"] == a) & (df_enhanced["ic50_nM"] < 500)]) > 0]
+        covered_alleles = [a for a in hla_freqs if len(df_enhanced[(df_enhanced["hla_allele"].fillna("") == a) & (df_enhanced["ic50_nM"].fillna(99999) < 500)]) > 0]
         total_coverage = 1 - np.prod([1 - hla_freqs[a] for a in covered_alleles])
 
         st.markdown(
@@ -1606,7 +1606,7 @@ with tab6:
         with col_ep:
             epitopes = []
             if not df_epitopes.empty:
-                epitopes = df_epitopes["mutant_peptide"].dropna().unique().tolist()[:10]
+                epitopes = df_epitopes["mutant_peptide"].dropna().unique().tolist()[:10] if "mutant_peptide" in df_epitopes.columns else []
             selected_ep = st.selectbox(
                 "Epitope",
                 options=epitopes if epitopes else ["KLACLDSYIIK"],
