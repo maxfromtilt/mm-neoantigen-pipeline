@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.0.7"
+__version__ = "2.0.8"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -404,7 +404,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.0.7",
+    page_title="MM Neoantigen Vaccine Designer v2.0.8",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -418,7 +418,7 @@ import sys
 sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
-st.sidebar.markdown("**Version 2.0.7** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
+st.sidebar.markdown("**Version 2.0.8** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
@@ -703,22 +703,35 @@ if not df_enhanced.empty:
 st.markdown("""
 ## MM Neoantigen Vaccine Designer
 
-A computational pipeline for designing personalised mRNA cancer vaccine candidates for multiple myeloma patients, using open-access genomic data.
+**What it does:** Takes a patient's tumour mutation data, identifies the most immunogenic protein fragments (neoantigens), and designs an optimised mRNA vaccine construct ready for synthesis.
 
-**What this tool does:** Takes a patient's tumour mutation data, identifies the most immunogenic protein fragments (neoantigens), and designs an optimised mRNA vaccine construct ready for synthesis.
+**Research tool only.** Predictions are computational — experimental validation required before clinical use.
+""")
 
-**Data sources used:**
-- [MMRF CoMMpass Study](https://themmrf.org/we-are-curing-multiple-myeloma/mmrf-commpass-study/) — Whole genome/exome sequencing and RNA-seq from ~995 newly diagnosed MM patients
-- [NCI Genomic Data Commons (GDC)](https://portal.gdc.cancer.gov/) — Federal cancer genomics data repository
-- [cBioPortal](https://www.cbioportal.org/) — Mutation frequency and survival data across 50+ cancer studies
-- [PRIDE Database](https://www.ebi.ac.uk/pride/) — Mass spectrometry validated HLA-bound peptides
-- [PeptideAtlas](https://www.peptideatlas.org/) — Human proteomics data confirming protein expression
-- [VDJdb](https://vdjdb.cvrgr.org/) — T-cell receptor sequences with known epitope specificity
-- [MHCflurry 2.1](https://github.com/openvax/mhcflurry) — Neural network MHC binding predictions (trained on IEDB)
+with st.expander("View data sources and methodology"):
+    st.markdown("""
+### Primary Data Sources
+- **[MMRF CoMMpass Study](https://themmrf.org/we-are-curing-multiple-myeloma/mmrf-commpass-study/)** — Whole genome/exome sequencing and RNA-seq from ~995 newly diagnosed MM patients (primary dataset)
+- **[NCI Genomic Data Commons (GDC)](https://portal.gdc.cancer.gov/)** — Federal cancer genomics data repository (API for MMRF data)
+- **[TCGA](https://portal.gdc.cancer.gov/)** — Validated mutation frequencies across multiple myeloma cohorts
 
-**Limitations:** Predictions are computational. Experimental validation required before clinical use. HLA typing uses population frequency priors. Research use only — not a clinical product.
+### Scientific Validation Layers
+- **[PRIDE Database](https://www.ebi.ac.uk/pride/)** — Mass spectrometry validated HLA-bound peptides (experimental confirmation)
+- **[HMB Database](https://www.hmadb.org/)** — Human MHC-bound peptide repository
+- **[cBioPortal](https://www.cbioportal.org/)** — Mutation frequency and survival data across 50+ cancer studies
+- **[PeptideAtlas](https://www.peptideatlas.org/)** — Human proteomics data confirming protein expression
+- **[VDJdb](https://vdjdb.cvrgr.org/)** — T-cell receptor sequences with known epitope specificity
+- **[McPAS-TCR](http://friedmanburg.com/McPAS-TCR/)** — TCR pathology database
 
----
+### Prediction Engine
+- **[MHCflurry 2.1](https://github.com/openvax/mhcflurry)** — Neural network MHC binding predictions trained on IEDB (350,000+ measurements)
+- **[PSSM binding matrices](https://pubmed.ncbi.nlm.nih.gov/15608049/)** — Position-specific scoring matrices for 6 HLA alleles
+
+### Limitations
+- HLA typing uses population frequency priors (arcasHLA/WES-based typing improves accuracy)
+- No RNA-seq expression data for all patients
+- dNdScov uses published gene scores, not per-patient calculation
+- Predictions are computational — experimental validation required before clinical use
 """)
 tab0, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "⌬  Analyse New Patient",
