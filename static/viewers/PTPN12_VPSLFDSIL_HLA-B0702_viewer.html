@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>pMHC Viewer (SVG fallback) - HLA-B*07:02 : VPSLFDSIL</title>
+  <style>
+    body { margin: 0; background: #0d1117; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: Arial, sans-serif; }
+    h2 { color: #58a6ff; margin-bottom: 8px; }
+    p { color: #8b949e; margin: 4px 0; }
+    .badge { background: #238636; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h2>pMHC Structural Viewer - HLA-B*07:02</h2>
+  <p>Epitope: <strong style="color:#ff7b72">VPSLFDSIL</strong> | IC50: 262.4 nM</p>
+  <p>Patient: mmrf_1796</p>
+  <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+    <span class="badge">SVG fallback (py3Dmol not installed)</span>
+    <p style="font-size: 0.8rem; color: #6e7681;">Install: pip install py3Dmol</p>
+  </div>
+  <div style="margin-top: 20px; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; max-width: 820px;">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="hlaGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3060B0"/>
+      <stop offset="100%" stop-color="#4080D0"/>
+    </linearGradient>
+    <linearGradient id="pepGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#CC2222"/>
+      <stop offset="100%" stop-color="#FF4444"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="#1a2332"/>
+  <ellipse cx="400" cy="260" rx="320" ry="130" fill="url(#hlaGrad)" opacity="0.25"/>
+  <ellipse cx="400" cy="260" rx="260" ry="100" fill="url(#hlaGrad)" opacity="0.35"/>
+  <ellipse cx="400" cy="260" rx="200" ry="70" fill="url(#hlaGrad)" opacity="0.5"/>
+  <path d="M 200 260 Q 400 180 600 260 Q 400 340 200 260" fill="#5090D0" opacity="0.4"/>
+  <rect x="260" y="245" width="252" height="30" rx="4" fill="url(#pepGrad)" opacity="0.9"/>
+  <text x="400" y="260" font-family="Courier New" font-size="16" fill="white" text-anchor="middle" dominant-baseline="middle" font-weight="bold">VPSLFDSIL</text>
+  <circle cx="80" cy="420" r="12" fill="#3060B0"/>
+  <text x="100" y="425" font-family="Arial" font-size="14" fill="#e6edf3">HLA alpha chain (AlphaFold2 model)</text>
+  <circle cx="80" cy="450" r="12" fill="#CC2222"/>
+  <text x="100" y="455" font-family="Arial" font-size="14" fill="#e6edf3">Peptide epitope: VPSLFDSIL</text>
+  <text x="400" y="50" font-family="Arial" font-size="20" fill="#58a6ff" text-anchor="middle" font-weight="bold">pMHC Complex - HLA-B*07:02</text>
+  <text x="400" y="80" font-family="Arial" font-size="14" fill="#8b949e" text-anchor="middle">IC50: 262.4 nM | Patient: mmrf_1796</text>
+  <text x="400" y="460" font-family="Arial" font-size="12" fill="#6e7681" text-anchor="middle">Schematic - install py3Dmol for interactive 3D view</text>
+</svg>
+  </div>
+</body>
+</html>
