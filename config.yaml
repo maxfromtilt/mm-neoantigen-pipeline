@@ -273,3 +273,81 @@ tcr:
   cross_reactive_boost: 10
   # Sequence similarity thresholds
   sim_match_min_shared: 7  # shared AA for cross-reactivity call
+
+# --- ClinVar Pathogenicity Classification (Enhancement 11) ---
+# Variant pathogenicity scoring via ClinVar API + InterVar rules
+clinvar:
+  enabled: true
+  base_url: "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+  max_api_calls: 100  # NCBI rate limit compliance
+  cache_file: "output/pathogenicity_cache.json"
+  pathogenicity_classes:
+    - "Pathogenic"
+    - "Likely Pathogenic"
+    - "VUS"
+    - "Likely Benign"
+    - "Benign/Likely Benign"
+  output_file: "output/pathogenicity.csv"
+
+# --- Tumour Mutational Burden (Enhancement 11) ---
+tmb:
+  enabled: true
+  capture_size_wgs_mb: 30.0   # WGS exome capture size in Mb
+  capture_size_wes_mb: 1.0    # WES exome capture size in Mb
+  default_capture: 30.0       # Default for MMRF WGS data
+  mm_median_tmb: 3.5          # Published MM median TMB (mut/MB)
+  hypermutated_threshold: 10.0  # TMB above which patient is "hypermutated"
+  categories:
+    very_high: 10.0
+    high: 5.0
+    moderate: 2.0
+
+# --- Survival Analysis (Enhancement 11) ---
+survival:
+  enabled: true
+  mmrf_cases_file: "data/mmrf_cases.csv"
+  output_file: "output/survival.csv"
+  gene_survival_output: "output/gene_survival_km.csv"
+  cohort_median_os_months: 48.0  # Published MMRF cohort median OS
+  km_maturity_threshold: 0.5    # Require >=50% events for reliable KM median
+
+# --- HLA Typing Enhancement (Enhancement 11) ---
+# Per-patient HLA typing with population prior fallback
+hla_typing:
+  enabled: true
+  method: "arcasHLA"          # arcasHLA | OptiType | population_prior
+  min_depth: 10
+  population_priors:
+    european:
+      class_i:
+        - "HLA-A*02:01"
+        - "HLA-A*01:01"
+        - "HLA-A*03:01"
+        - "HLA-A*24:02"
+        - "HLA-B*07:02"
+        - "HLA-B*08:01"
+        - "HLA-B*44:03"
+        - "HLA-C*07:01"
+        - "HLA-C*05:01"
+      class_ii:
+        - "HLA-DRB1*01:01"
+        - "HLA-DRB1*07:01"
+        - "HLA-DRB1*15:01"
+        - "HLA-DQB1*02:01"
+        - "HLA-DQB1*06:02"
+  hla_output_file: "data/hla_typing.json"
+  confidence_levels:
+    wes: "High (WES-based)"
+    population: "Medium (population prior)"
+    unknown: "Low"
+
+# --- Per-Patient Clinical PDF Report (Enhancement 11) ---
+clinical_report:
+  enabled: true
+  output_dir: "output"
+  report_file_template: "{patient_id}_clinical_report.pdf"
+  top_epitopes: 5
+  include_trial_matches: true
+  max_trial_matches: 3
+  include_limitations: true
+  font: "Helvetica"

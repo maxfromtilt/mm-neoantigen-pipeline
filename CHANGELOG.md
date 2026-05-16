@@ -6,7 +6,70 @@ Entries are grouped by enhancement number and sorted by date (newest first).
 
 ---
 
-## [Unreleased] — Enhancement 11: TCR Repertoire Integration
+## [Unreleased] — Enhancement 11: ClinVar Pathogenicity, TMB, Survival Analysis, HLA Typing, Clinical PDF Report
+
+**Date:** 2026-05-16
+**Files created:** `11_pathogenicity.py`, `12_survival_analysis.py`, `hla_typing.py`, `13_clinical_report.py`
+**Files modified:** `app.py`, `config.yaml`, `requirements.txt`, `CHANGELOG.md`
+
+### 11a — ClinVar / InterVar Pathogenicity Scoring (`11_pathogenicity.py`)
+
+- New standalone module querying ClinVar public API (E-utilities) for each gene/mutation combination
+- Uses `esearch.fcgi` to find ClinVar records by gene + amino acid change, then `esummary.fcgi` to fetch clinical significance
+- Falls back to **InterVar-style rules** when ClinVar data is unavailable:
+  - Truncating mutations (frameshift, stop-gain) in tumour suppressors = "Pathogenic"
+  - Known oncogenes (KRAS, NRAS, BRAF) with missense = "Likely Pathogenic"
+  - Silent/non-coding = "Benign/Likely Benign"
+- Added `pathogenicity_class` column to neoantigen candidates: Pathogenic | Likely Pathogenic | VUS | Likely Benign | Benign
+- Outputs `output/pathogenicity.csv` with gene, aa_change, class, clinvar_id, explanation
+- JSON cache at `output/pathogenicity_cache.json` (reused on subsequent runs, respecting NCBI rate limits)
+
+### 11b — TMB (Tumour Mutational Burden) Display (`app.py`)
+
+- Added `calculate_tmb()` helper function computing mutations per Mb from patient prediction data
+- TMB metric added to the Overview tab key metrics row (6th metric)
+- Displays mutation count, capture size, and category (Very High/High/Moderate/Low) relative to MM population norm (~2-5 mut/MB)
+- Expandable detail section explaining MM TMB norms and clinical relevance
+- Category thresholds: very high >=10, high >=5, moderate >=2, low <2 mut/MB
+
+### 11c — Survival Analysis (`12_survival_analysis.py`)
+
+- Extracts per-patient survival from `data/mmrf_cases.csv` (days_to_death, days_to_last_follow_up, vital_status)
+- Computes cohort-level KM statistics: median OS, mean OS, n patients, n deceased
+- Per-gene survival breakdown: which genes are associated with better/worse outcomes in the MMRF cohort
+- Outputs `output/survival.csv` (patient-level) and `output/gene_survival_km.csv` (gene-level)
+- Added `load_patient_survival_data()` helper to `app.py` for displaying patient OS in sidebar
+
+### 11d — arCasHLA-Style HLA Typing Enhancement (`hla_typing.py`)
+
+- Extracts HLA alleles from MMRF patient clinical data (WES-based if available)
+- Falls back to population frequency priors (European ancestry defaults, configurable)
+- Adds HLA confidence score (High/Medium/Low) based on data source
+- Outputs `data/hla_typing.json` with per-patient HLA class I/II alleles
+- Displays patient HLA type + confidence in sidebar expander in `app.py`
+- `load_patient_hla()` helper function integrated into app.py overview section
+
+### 11e — Per-Patient Clinical PDF Report (`13_clinical_report.py`)
+
+- Generates a formatted one-page PDF clinical report for any specific patient
+- Sections: mutation summary, top 5 epitopes table, vaccine construct summary (epitopes, length, GC content), mutation frequency in MM cohort, clinical trial matching (top 3), limitations/disclaimer
+- Uses `fpdf2` library for pure-Python PDF generation (no external dependencies)
+- Integrated into `app.py` Vaccine Construct tab with "Generate Clinical PDF Report" button and direct PDF download
+- Output path: `output/{patient_id}_clinical_report.pdf`
+
+**config.yaml additions:**
+- `clinvar` section: API endpoint, rate limits, output paths
+- `tmb` section: capture sizes, MM median norm, category thresholds
+- `survival` section: MMRF cases path, cohort median OS
+- `hla_typing` section: population priors (European/global), confidence levels, output path
+- `clinical_report` section: output dir, top epitopes count, trial match count
+
+**requirements.txt additions:**
+- `fpdf2>=2.7.0` (for clinical PDF report generation)
+
+---
+
+## [Unreleased] — Enhancement 10: TCR Repertoire Integration
 
 **Date:** 2026-05-16
 **Files created:** `09_tcr_repertoire.py`

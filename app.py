@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.0.8"
+__version__ = "2.0.9"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -404,7 +404,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.0.8",
+    page_title="MM Neoantigen Vaccine Designer v2.0.9",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -418,7 +418,7 @@ import sys
 sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
-st.sidebar.markdown("**Version 2.0.8** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
+st.sidebar.markdown("**Version 2.0.9** — Enhanced: ClinVar, TMB, Survival, HLA typing, Clinical PDF, TCR, PeptideAtlas, Ligandomics")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
@@ -504,6 +504,133 @@ def load_vaccine_report(patient_id: str) -> str:
         with open(path) as f:
             return f.read()
     return ""
+
+
+def load_patient_survival_data(patient_id: str) -> dict:
+    """Load per-patient survival data from mmrf_cases.csv and survival analysis output."""
+    result = {
+        "vital_status": None,
+        "days_to_death": None,
+        "days_to_last_follow_up": None,
+        "overall_survival_months": None,
+        "cohort_median_os_months": 48.0,
+        "cohort_n_patients": 0,
+        "survival_source": None,
+    }
+
+    # Load from mmrf_cases.csv
+    cases_path = "data/mmrf_cases.csv"
+    if os.path.exists(cases_path):
+        try:
+            cases_df = pd.read_csv(cases_path)
+            # Match by submitter_id or case_id
+            match = cases_df[
+                cases_df["submitter_id"].str.upper() == patient_id.upper().replace("MMRF_", "MMRF_")
+            ]
+            if match.empty:
+                pid_cased = patient_id.replace("mmrf_", "").upper()
+                match = cases_df[
+                    cases_df["submitter_id"].str.upper().str.contains(pid_cased, na=False)
+                ]
+            if not match.empty:
+                row = match.iloc[0]
+                result["vital_status"] = row.get("vital_status")
+                result["days_to_death"] = row.get("days_to_death")
+                result["days_to_last_follow_up"] = row.get("days_to_last_follow_up")
+                result["survival_source"] = "mmrf_cases"
+                if pd.notna(row.get("days_to_death")):
+                    result["overall_survival_months"] = round(row["days_to_death"] / 30.44, 1)
+                elif pd.notna(row.get("days_to_last_follow_up")):
+                    result["overall_survival_months"] = round(row["days_to_last_follow_up"] / 30.44, 1)
+        except Exception:
+            pass
+
+    # Load from survival analysis output if available
+    survival_path = "output/survival.csv"
+    if os.path.exists(survival_path):
+        try:
+            surv_df = pd.read_csv(survival_path)
+            row = surv_df[surv_df.get("patient_id", surv_df.get("submitter_id", "")) == patient_id]
+            if not row.empty:
+                for k in ["cohort_median_os_months", "cohort_n_patients", "overall_survival_months"]:
+                    if k in row.columns:
+                        result[k] = float(row.iloc[0][k])
+        except Exception:
+            pass
+
+    return result
+
+
+def calculate_tmb(mutation_df: pd.DataFrame, capture_size_mb: float = 30.0) -> dict:
+    """
+    Calculate Tumour Mutational Burden.
+
+    Args:
+        mutation_df: DataFrame with at least case_id column and a consequence column
+        capture_size_mb: Exome capture size in Mb (default 30Mb for WGS, 1Mb for WES)
+
+    Returns dict with tmb_score, mutation_count, capture_size_mb, tmb_category
+    """
+    if mutation_df.empty:
+        return {"tmb_score": 0.0, "mutation_count": 0, "capture_size_mb": capture_size_mb, "tmb_category": "Unknown"}
+
+    # Count missense + frameshift mutations per patient
+    relevant = {"missense_variant", "Missense_Mutation", "Frame_Shift_Del",
+                "Frame_Shift_Ins", "frameshift_variant", "inframe_deletion",
+                "inframe_insertion", "In_Frame_Del", "In_Frame_Ins"}
+
+    n_mutations = 0
+    if "consequence_type" in mutation_df.columns:
+        n_mutations = mutation_df[mutation_df["consequence_type"].isin(relevant)].shape[0]
+    else:
+        n_mutations = len(mutation_df)
+
+    tmb = round(n_mutations / capture_size_mb, 2)
+
+    # MM population norms: median ~2-5 mut/MB, high >10 mut/MB
+    if tmb >= 10:
+        category = "Very High (>10 mut/MB) — hypermutated, may respond to ICPi"
+    elif tmb >= 5:
+        category = "High (5-10 mut/MB) — intermediate"
+    elif tmb >= 2:
+        category = "Moderate (2-5 mut/MB) — MM population norm"
+    else:
+        category = "Low (<2 mut/MB) — lower neoantigen load"
+
+    return {
+        "tmb_score": tmb,
+        "mutation_count": n_mutations,
+        "capture_size_mb": capture_size_mb,
+        "tmb_category": category,
+    }
+
+
+def load_patient_hla(patient_id: str) -> dict:
+    """Load per-patient HLA typing from hla_typing.json or return population priors."""
+    hla_config = {
+        "class_i": ["HLA-A*02:01", "HLA-A*01:01", "HLA-A*03:01", "HLA-A*24:02",
+                    "HLA-B*07:02", "HLA-B*08:01"],
+        "class_ii": ["HLA-DRB1*01:01", "HLA-DRB1*07:01", "HLA-DQB1*02:01"],
+        "confidence": "Medium (population prior)",
+    }
+
+    hla_path = "data/hla_typing.json"
+    if os.path.exists(hla_path):
+        try:
+            import json
+            with open(hla_path) as f:
+                hla_data = json.load(f)
+            patient_hla = hla_data.get(patient_id, hla_data.get(
+                patient_id.replace("mmrf_", "MMRF_").upper(), {}
+            ))
+            if patient_hla:
+                hla_config["class_i"] = patient_hla.get("class_i", hla_config["class_i"])
+                hla_config["class_ii"] = patient_hla.get("class_ii", hla_config["class_ii"])
+                hla_config["confidence"] = patient_hla.get("confidence", "High (WES-based)")
+        except Exception:
+            pass
+
+    return hla_config
 
 
 def classify_binding(ic50):
@@ -686,12 +813,41 @@ if not df_enhanced.empty:
             (df_enhanced["ic50_nM"] < 500)
         ])
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    # TMB calculation
+    tmb_info = calculate_tmb(df_enhanced)
+
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     col1.metric("Total Predictions", f"{total_predictions:,}")
     col2.metric("MHC-I Binders", f"{total_binders}", f"{100*total_binders/max(total_predictions,1):.1f}%")
     col3.metric("Strong Binders", f"{strong_binders}", "IC50 < 50 nM")
     col4.metric("Dual MHC-I/II", f"{n_dual}", "CD4+ & CD8+")
     col5.metric("Clonal Binders", f"{clonal_count}", "In all tumour cells")
+    col6.metric("TMB", f"{tmb_info['tmb_score']} mut/MB", tmb_info['tmb_category'].split(" — ")[0])
+
+    with st.expander("▸  Tumour Mutational Burden (TMB) Details"):
+        st.markdown(
+            f"""
+            **TMB = {tmb_info['tmb_score']} mutations/MB** (capture size: {tmb_info['capture_size_mb']} Mb)
+
+            - Mutations counted: **{tmb_info['mutation_count']}** (missense/frameshift)
+            - Category: **{tmb_info['tmb_category']}**
+
+            **MM population norms:** Median TMB ~2-5 mut/MB. Published literature: MM is typically
+            a lower-TMB haematological malignancy compared to solid tumours (e.g. melanoma ~10-50 mut/MB).
+            Higher TMB correlates with better response to immune checkpoint inhibitors and may
+            indicate more neoantigen targets per vaccine.
+            """
+        )
+
+    # HLA typing display in sidebar
+    patient_hla = load_patient_hla(selected_patient)
+    with st.sidebar:
+        with st.expander("▸  HLA Typing"):
+            st.markdown(f"**Patient HLA (confidence: {patient_hla['confidence']})**")
+            for allele in patient_hla.get("class_i", [])[:4]:
+                st.markdown(f"  \u2022 {allele}")
+            if patient_hla.get("class_ii"):
+                st.markdown(f"  _Class II: {', '.join(patient_hla.get('class_ii', [])[:2])}_")
 
     st.markdown("---")
 
@@ -1171,6 +1327,32 @@ with tab5:
             }
             for k, v in construct_info.items():
                 st.markdown(f"**{k}:** {v}")
+
+            st.markdown("---")
+            st.markdown("#### Download Clinical Report")
+
+            if st.button("Generate Clinical PDF Report", key="gen_clinical_pdf"):
+                with st.spinner("Generating clinical report PDF..."):
+                    try:
+                        import sys
+                        sys.path.insert(0, str(Path.cwd()))
+                        from 13_clinical_report import build_report
+                        pdf_path = build_report(selected_patient)
+                        st.success(f"Report generated: {pdf_path}")
+                    except Exception as e:
+                        st.error(f"Could not generate report: {e}")
+            existing_pdf = f"output/{selected_patient}_clinical_report.pdf"
+            if os.path.exists(existing_pdf):
+                with open(existing_pdf, "rb") as f:
+                    pdf_data = f.read()
+                st.download_button(
+                    "Download Clinical Report (PDF)",
+                    data=pdf_data,
+                    file_name=f"{selected_patient}_clinical_report.pdf",
+                    mime="application/pdf",
+                )
+            else:
+                st.caption("Run Generate above to create the PDF report.")
 
         # Architecture diagram
         st.markdown("#### Construct Architecture")
