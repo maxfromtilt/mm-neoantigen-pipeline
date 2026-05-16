@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -405,7 +405,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.0.3",
+    page_title="MM Neoantigen Vaccine Designer v2.0.4",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -419,7 +419,7 @@ import sys
 sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
-st.sidebar.markdown("**Version 2.0.3** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
+st.sidebar.markdown("**Version 2.0.4** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
@@ -570,6 +570,61 @@ with st.sidebar:
         value=False,
         help="Show only known MM driver gene mutations"
     )
+
+
+    st.markdown("---")
+    with st.expander("How to Use / What It Does"):
+        st.markdown("### What is this?")
+        st.markdown(
+            "This tool designs personalised mRNA cancer vaccine candidates for "
+            "multiple myeloma (MM) patients. It takes a patient's tumour mutation "
+            "data and identifies which protein fragments (epitopes) are most likely "
+            "to be seen by the immune system as foreign — making them good vaccine targets."
+        )
+        st.markdown("### Pipeline Overview")
+        st.markdown("""
+        1. **Load mutations** — Reads somatic mutations from the patient's tumour DNA
+        2. **Generate peptides** — Creates 8-11 amino acid fragments around each mutation
+        3. **Predict MHC binding** — Tests how strongly each fragment binds to HLA proteins
+        4. **Rank epitopes** — Scores by immunogenicity, driver gene status, and other factors
+        5. **Design vaccine** — Builds an mRNA construct with selected epitopes optimised for stability
+        """)
+        st.markdown("### New in v2.0 — Scientific Validation Layers")
+        st.markdown("""
+        - **HLA Ligandomics** — Mass-spec confirmed HLA-bound peptides (PRIDE/HMB databases)
+        - **cBioPortal** — Mutation frequency in real MM patient cohorts (50+ studies)
+        - **TCR Repertoire** — Known T-cell receptor targets for predicted epitopes
+        - **PeptideAtlas** — Proteomics confirmation that the target proteins are expressed
+        """)
+        st.markdown("### How to Read the Results")
+        st.markdown("""
+        - **Top Candidates table** — Epitopes ranked by immunogenicity score (higher = better)
+        - **IC50** — Binding strength in nanomolars. Lower = tighter binding (<50nM = strong)
+        - **Agretopicity Index** — How much better the mutant binds vs wildtype (>1 = promising)
+        - **Driver genes** — KRAS, NRAS, TP53, BRAF etc. are known MM oncogenes
+        - **mRNA Vaccine** — The final optimised construct sequence ready for synthesis
+        """)
+        st.markdown("### Data Sources")
+        st.markdown("""
+        - Genomic data: **MMRF CoMMpass Study** (995 newly diagnosed MM patients)
+        - Binding predictions: **MHCflurry 2.1** (neural network trained on IEDB)
+        - dNdScov driver scores: Published selection pressure cutoffs
+        - Trial matching: **ClinicalTrials.gov API** (live data)
+        """)
+        st.markdown("### Limitations")
+        st.markdown("""
+        - HLA typing uses population frequency priors (WES-based typing improves accuracy)
+        - No RNA-seq expression data yet for many patients (expression filter applied where available)
+        - Predictions are computational — experimental validation required before clinical use
+        - dNdScov uses published gene scores, not per-patient calculation
+        """)
+        st.markdown(
+            '<div class="disclaimer">'
+            '<b>Research Only</b> — Not validated for clinical use. '
+            'Consult a licensed oncologist before any treatment decision.'
+            '</div>',
+            unsafe_allow_html=True,
+        )
 
     st.markdown("---")
     st.markdown("### About")
