@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.1.4"
+__version__ = "2.1.5"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -1643,7 +1643,14 @@ with tab6:
                 try:
                     with open(viewer_path, "r") as f:
                         html_content = f.read()
-                    st.components.v1.html(html_content, height=500, scrolling=True)
+                    # Use iframe with srcdoc for reliable mobile rendering
+                    sandboxed = html_content.replace('"', '&quot;')
+                    iframe_html = (
+                        f'<iframe srcdoc="{sandboxed}" '
+                        f'width="100%" height="500" style="border:none;border-radius:8px;" '
+                        f'sandbox="allow-scripts allow-same-origin"></iframe>'
+                    )
+                    st.components.v1.html(iframe_html, height=530, scrolling=True)
                 except Exception as e:
                     st.error(f"Could not load viewer: {e}")
 

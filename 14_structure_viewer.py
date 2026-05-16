@@ -196,7 +196,7 @@ def generate_svg_fallback(output_path: str, peptide: str, allele: str, ic50: flo
         '      <stop offset="100%" stop-color="#FF4444"/>\n'
         '    </linearGradient>\n'
         '  </defs>\n'
-        '  <rect width="800" height="500" fill="#0d1117"/>\n'
+        '  <rect width="800" height="500" fill="#1a2332"/>\n'
         '  <ellipse cx="400" cy="260" rx="320" ry="130" fill="url(#hlaGrad)" opacity="0.25"/>\n'
         '  <ellipse cx="400" cy="260" rx="260" ry="100" fill="url(#hlaGrad)" opacity="0.35"/>\n'
         '  <ellipse cx="400" cy="260" rx="200" ry="70" fill="url(#hlaGrad)" opacity="0.5"/>\n'
