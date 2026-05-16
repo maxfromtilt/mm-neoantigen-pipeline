@@ -1,0 +1,6 @@
+gene_symbol,aa_change,consequence_type
+KRAS,G12D,missense_variant
+TP53,R273H,missense_variant
+NRAS,Q61K,missense_variant
+BRAF,V600E,missense_variant
+MYC,T58A,missense_variant

@@ -1,0 +1,39 @@
+{
+  "ordered_epitopes": [
+    "PPVETPLPL",
+    "RLKSKWIKY",
+    "ERAKNKIKK",
+    "VPSLFDSIL",
+    "YS*QFLTLF"
+  ],
+  "epitope_order": [
+    0,
+    3,
+    1,
+    2,
+    4
+  ],
+  "linker_sequence": "GGSGGGGSGG",
+  "signal_peptide": "MDAMKRGLCCVLLLCGAVFVSPSQEIHARFR",
+  "cassette_protein": "MDAMKRGLCCVLLLCGAVFVSPSQEIHARFRPPVETPLPLGGSGGGGSGGRLKSKWIKYGGSGGGGSGGERAKNKIKKGGSGGGGSGGVPSLFDSILGGSGGGGSGGYS*QFLTLF",
+  "cassette_protein_length": 116,
+  "mrna_length_nt": 568,
+  "gc_content": 0.4824,
+  "estimated_molecular_weight_da": 187440,
+  "estimated_molecular_weight_kda": 187.4,
+  "five_prime_utr": "GCTTCTTGTTCTTTTGCAGAAGCTCAGAATAAACGCTCAACTTTGGCAGATCGG",
+  "three_prime_utr": "CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "poly_a_length": 120,
+  "n_epitopes": 5,
+  "codon_optimisation_level": "standard",
+  "cassette_cub_score": 0.9832,
+  "cassette_gc_content": 0.6983,
+  "cassette_mfe_kcal_mol": -10.85,
+  "cassette_stability_score": 1.0,
+  "cassette_motif_runs": [],
+  "modifications": [
+    "5' Cap: m7GpppN (Cap1 structure)",
+    "All uridines: N1-methylpseudouridine (m1\u03a8)",
+    "Codon optimisation: standard (CUB + GC balance)"
+  ]
+}
