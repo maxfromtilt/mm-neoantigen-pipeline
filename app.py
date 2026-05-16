@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.0.9"
+__version__ = "2.1.0"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -404,7 +404,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.0.9",
+    page_title="MM Neoantigen Vaccine Designer v2.1.0",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -418,7 +418,7 @@ import sys
 sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
-st.sidebar.markdown("**Version 2.0.9** — Enhanced: ClinVar, TMB, Survival, HLA typing, Clinical PDF, TCR, PeptideAtlas, Ligandomics")
+st.sidebar.markdown("**Version 2.1.0** — Enhanced: ClinVar, TMB, Survival, HLA, Clinical PDF, TCR, PeptideAtlas, Ligandomics, IND Docs, mRNA Synthesis")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
@@ -757,6 +757,47 @@ with st.sidebar:
 
 
     st.markdown("---")
+    st.markdown("### IND Documentation")
+
+    ind_package_dir = f"output/ind_package/{selected_patient}"
+    ind_ready = os.path.exists(ind_package_dir) and os.path.isdir(ind_package_dir)
+
+    if st.button("Generate IND Package", key="gen_ind_btn"):
+        with st.spinner("Generating IND documentation package..."):
+            try:
+                import subprocess
+                result = subprocess.run(
+                    [sys.executable, "16_generate_ind_package.py", "--patient", selected_patient],
+                    capture_output=True, text=True, cwd=str(Path.cwd())
+                )
+                if result.returncode == 0:
+                    st.success("IND package generated!")
+                else:
+                    st.error(f"IND package generation failed: {result.stderr[:200]}")
+            except Exception as e:
+                st.error(f"Could not generate package: {e}")
+
+    if ind_ready:
+        import zipfile, io
+        # Create a zip of the package
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for fname in os.listdir(ind_package_dir):
+                fpath = os.path.join(ind_package_dir, fname)
+                if os.path.isfile(fpath):
+                    with open(fpath, "rb") as f:
+                        zf.writestr(fname, f.read())
+        zip_buffer.seek(0)
+        st.download_button(
+            "Download IND Package (ZIP)",
+            data=zip_buffer.getvalue(),
+            file_name=f"{selected_patient}_ind_package.zip",
+            mime="application/zip",
+        )
+    else:
+        st.caption("Generate above to download IND package.")
+
+    st.markdown("---")
     st.markdown(
         "Open-source pipeline for designing personalised "
         "mRNA cancer vaccines for multiple myeloma.\n\n"
@@ -889,13 +930,14 @@ with st.expander("View data sources and methodology"):
 - dNdScov uses published gene scores, not per-patient calculation
 - Predictions are computational — experimental validation required before clinical use
 """)
-tab0, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "⌬  Analyse New Patient",
     "▤  Overview",
     "◎  Top Candidates",
     "⚗  Binding Analysis",
     "⟠  HLA Coverage",
     "⊕  Vaccine Construct",
+    "⟡  3D Viewer",
     "≡  Full Data",
 ])
 
@@ -935,6 +977,45 @@ with tab0:
             file_name="sample_mm_mutations.csv",
             mime="text/csv",
         )
+
+        st.markdown("---")
+        st.markdown("#### Or upload BAM/CRAM for variant calling")
+        st.caption("Upload an aligned BAM or CRAM file for WGS/WES variant calling. "
+                   "Note: Large file upload may take time. Variant calling runs server-side.")
+
+        uploaded_bam = st.file_uploader(
+            "Drop BAM or CRAM file here",
+            type=["bam", "cram"],
+            key="bam_uploader",
+            help="Accepts indexed BAM (.bai) or CRAM (.crai) files. Large files (100MB+) may be slow to upload.",
+        )
+        if uploaded_bam:
+            import tempfile, shutil
+            with st.spinner("Processing BAM/CRAM file..."):
+                try:
+                    # Save uploaded file temporarily
+                    suffix = ".bam" if uploaded_bam.name.endswith(".bam") else ".cram"
+                    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                        shutil.copyfileobj(uploaded_bam, tmp)
+                        tmp_path = tmp.name
+                    # Run variant calling
+                    import subprocess
+                    result = subprocess.run(
+                        [sys.executable, "06_wgs_variant_calling.py",
+                         "--patient", selected_patient,
+                         "--bam", tmp_path],
+                        capture_output=True, text=True, cwd=str(Path.cwd()), timeout=300
+                    )
+                    if result.returncode == 0:
+                        st.success("Variant calling complete!")
+                        st.info("Results saved to: "
+                                f"output/{selected_patient}_wgs/{selected_patient}_wgs_variants.csv")
+                    else:
+                        st.error(f"Variant calling failed: {result.stderr[:200]}")
+                    # Cleanup temp file
+                    os.unlink(tmp_path)
+                except Exception as e:
+                    st.error(f"Could not process BAM/CRAM: {e}")
 
     if uploaded_file:
         run_uploaded_pipeline(uploaded_file)
@@ -1060,6 +1141,13 @@ with tab2:
     if not df_filtered.empty:
         st.subheader("Ranked Vaccine Candidates")
 
+        # MS-Confirmed filter (from proteogenomics)
+        show_ms_confirmed_only = st.checkbox(
+            "Show MS-confirmed only",
+            value=False,
+            help="Show only epitopes validated by mass spectrometry (PRIDE/PeptideAtlas)"
+        )
+
         # Get best per gene+mutation+peptide
         display_cols = [
             "gene_symbol", "aa_change", "mutant_peptide", "hla_allele",
@@ -1075,6 +1163,24 @@ with tab2:
 
         available_cols = [c for c in display_cols if c in df_filtered.columns]
         top_df = df_filtered.nsmallest(50, "ic50_nM")[available_cols].copy()
+
+        # Apply MS-confirmed filter if proteomics data available
+        if show_ms_confirmed_only:
+            if "proteomics_confirmed" in top_df.columns:
+                top_df = top_df[top_df["proteomics_confirmed"] == True]
+                if top_df.empty:
+                    st.warning("No MS-confirmed epitopes found. Run proteogenomics first (07_proteogenomics.py).")
+            else:
+                st.info("Proteomics data not loaded. Run 07_proteogenomics.py first to enable MS-confirmed filtering.")
+        elif "proteomics_confirmed" in top_df.columns:
+            # Add MS Confirmed badge indicator
+            pass  # handled in display below
+
+        # Add MS Confirmed badge if data available
+        if "proteomics_confirmed" in top_df.columns:
+            top_df["MS Confirmed"] = top_df["proteomics_confirmed"].apply(
+                lambda x: "✓" if x else ""
+            )
 
         # Format
         if "ic50_nM" in top_df.columns:
@@ -1098,6 +1204,7 @@ with tab2:
             "cancer_cell_fraction": "CCF",
             "best_mhc_ii_ic50": "MHC-II IC50",
             "enhanced_score": "Score",
+            "proteomics_confirmed": "MS Confirmed",
         }
         top_df = top_df.rename(columns=rename_map)
 
@@ -1318,7 +1425,7 @@ with tab5:
 
             # Parse from vaccine report
             construct_info = {
-                "Epitopes": len(df_epitopes),
+                "Epitopes": len(df_epitopes) if not df_epitopes.empty else 0,
                 "Linker": "GGSGGGGSGG",
                 "5' Cap": "m7GpppN (Cap1)",
                 "Modification": "m1Ψ (all U)",
@@ -1329,15 +1436,76 @@ with tab5:
                 st.markdown(f"**{k}:** {v}")
 
             st.markdown("---")
+            st.markdown("#### mRNA Synthesis Order")
+
+            if st.button("Generate Synthesis Order", key="gen_synthesis_order"):
+                with st.spinner("Generating synthesis order..."):
+                    try:
+                        import subprocess
+                        result = subprocess.run(
+                            [sys.executable, "17_synthesis_order.py", "--patient", selected_patient],
+                            capture_output=True, text=True, cwd=str(Path.cwd())
+                        )
+                        if result.returncode == 0:
+                            st.success("Synthesis order generated!")
+                        else:
+                            st.error(f"Synthesis order failed: {result.stderr}")
+                    except Exception as e:
+                        st.error(f"Could not generate order: {e}")
+
+            # Download synthesis order CSV
+            synthesis_csv_path = f"output/{selected_patient}/synthesis_order.csv"
+            synthesis_form_path = f"output/{selected_patient}/synthesis_order_form.txt"
+
+            if os.path.exists(synthesis_csv_path):
+                with open(synthesis_csv_path) as f:
+                    synthesis_data = f.read()
+                st.download_button(
+                    "Download Synthesis Order (CSV)",
+                    data=synthesis_data,
+                    file_name=f"{selected_patient}_synthesis_order.csv",
+                    mime="text/csv",
+                )
+            else:
+                st.caption("Run Generate above to create the synthesis order.")
+
+            if os.path.exists(synthesis_form_path):
+                with open(synthesis_form_path) as f:
+                    form_data = f.read()
+                st.download_button(
+                    "Download Order Form (TXT)",
+                    data=form_data,
+                    file_name=f"{selected_patient}_synthesis_order_form.txt",
+                    mime="text/plain",
+                )
+
+            # Email vendor button
+            email_draft_path = f"output/{selected_patient}/synthesis_email_draft.txt"
+            if os.path.exists(email_draft_path):
+                with open(email_draft_path) as f:
+                    email_content = f.read()
+                lines = email_content.split("\n")
+                mailto_line = [l for l in lines if l.startswith("mailto:")]
+                if mailto_line:
+                    st.markdown(
+                        f"[📧  Email Vendor (TriLink)]({mailto_line[0]})"
+                    )
+
+            st.markdown("---")
             st.markdown("#### Download Clinical Report")
 
             if st.button("Generate Clinical PDF Report", key="gen_clinical_pdf"):
                 with st.spinner("Generating clinical report PDF..."):
                     try:
-                        import sys
+                        import importlib.util, sys
                         sys.path.insert(0, str(Path.cwd()))
-                        from 13_clinical_report import build_report
-                        pdf_path = build_report(selected_patient)
+                        spec = importlib.util.spec_from_file_location(
+                            "clinical_report",
+                            Path.cwd() / "13_clinical_report.py"
+                        )
+                        cr_mod = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(cr_mod)
+                        pdf_path = cr_mod.build_report(selected_patient)
                         st.success(f"Report generated: {pdf_path}")
                     except Exception as e:
                         st.error(f"Could not generate report: {e}")
@@ -1366,9 +1534,116 @@ with tab5:
             st.text(vaccine_report)
 
 
-# ── Tab 6: Full Data ─────────────────────────────────────────────────
+# ── Tab 6: 3D Viewer ─────────────────────────────────────────────────
 
 with tab6:
+    st.subheader("3D pMHC Structural Viewer")
+    st.markdown(
+        "Interactive 3D visualization of the top epitope-HLA class I complex. "
+        "Shows the peptide sitting in the HLA binding groove."
+    )
+
+    patient_id = selected_patient
+
+    # Look for generated structure viewers
+    structure_dir = f"output/{patient_id}_structures"
+    os.makedirs(structure_dir, exist_ok=True)
+
+    if os.path.exists(structure_dir):
+        viewers = sorted(Path(structure_dir).glob("*_viewer.html"))
+    else:
+        viewers = []
+
+    if not viewers:
+        st.info("No structure viewers generated yet. Run the structure viewer to generate them.")
+        col_gen, _ = st.columns([1, 2])
+        with col_gen:
+            if st.button("Generate 3D Viewers", key="gen_structure_viewer"):
+                with st.spinner("Generating 3D structure viewers..."):
+                    import subprocess
+                    result = subprocess.run(
+                        [sys.executable, "14_structure_viewer.py", "--patient", patient_id],
+                        capture_output=True, text=True, cwd=str(Path.cwd())
+                    )
+                    if result.returncode == 0:
+                        st.success("Viewers generated!")
+                        st.rerun()
+                    else:
+                        st.error(f"Viewer generation failed: {result.stderr}")
+
+        st.markdown("**Or generate for a specific epitope:**")
+        col_ep, col_hla = st.columns(2)
+        with col_ep:
+            epitopes = []
+            if not df_epitopes.empty:
+                epitopes = df_epitopes["mutant_peptide"].dropna().unique().tolist()[:10]
+            selected_ep = st.selectbox(
+                "Epitope",
+                options=epitopes if epitopes else ["KLACLDSYIIK"],
+                key="struct_epitope_select",
+            )
+        with col_hla:
+            hlas = ["HLA-A*02:01", "HLA-A*03:01", "HLA-A*01:01",
+                    "HLA-A*24:02", "HLA-B*07:02", "HLA-B*08:01"]
+            selected_hla = st.selectbox("HLA Allele", options=hlas, key="struct_hla_select")
+
+        if st.button("Generate Single Viewer", key="gen_single_viewer"):
+            with st.spinner("Generating viewer..."):
+                import subprocess
+                result = subprocess.run(
+                    [sys.executable, "14_structure_viewer.py",
+                     "--patient", patient_id,
+                     "--epitope", selected_ep,
+                     "--hla", selected_hla],
+                    capture_output=True, text=True, cwd=str(Path.cwd())
+                )
+                if result.returncode == 0:
+                    st.success("Viewer generated!")
+                    st.rerun()
+                else:
+                    st.error(f"Failed: {result.stderr}")
+    else:
+        st.success(f"Found {len(viewers)} structure viewer(s)")
+
+        # Display each viewer
+        for viewer_path in viewers:
+            viewer_name = viewer_path.stem.replace("_viewer", "").replace("_", " ")
+            with st.expander(f"▸  {viewer_name}"):
+                # Read HTML and display in iframe
+                try:
+                    with open(viewer_path, "r") as f:
+                        html_content = f.read()
+                    st.components.v1.html(html_content, height=500, scrolling=True)
+                except Exception as e:
+                    st.error(f"Could not load viewer: {e}")
+
+                # Download button
+                with open(viewer_path, "rb") as f:
+                    viewer_data = f.read()
+                st.download_button(
+                    f"Download {viewer_name} HTML",
+                    data=viewer_data,
+                    file_name=viewer_path.name,
+                    mime="text/html",
+                )
+
+        if st.button("🔄  Regenerate Viewers", key="regen_viewers"):
+            import subprocess
+            with st.spinner("Regenerating..."):
+                result = subprocess.run(
+                    [sys.executable, "14_structure_viewer.py", "--patient", patient_id],
+                    capture_output=True, text=True, cwd=str(Path.cwd())
+                )
+                if result.returncode == 0:
+                    st.success("Viewers regenerated!")
+                    st.rerun()
+                else:
+                    st.error(f"Failed: {result.stderr}")
+
+
+# ── Tab 7: Full Data ─────────────────────────────────────────────────
+
+with tab7:
     st.subheader("Complete Dataset")
 
     if not df_enhanced.empty:
