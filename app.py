@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.1.1"
+__version__ = "2.1.2"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -1326,7 +1326,10 @@ with tab3:
         if not df_mhc_ii.empty:
             st.subheader("MHC-II Binding Predictions (CD4+ T Helper Epitopes)")
 
-            mhc_ii_binders = df_mhc_ii[df_mhc_ii["mhc_ii_ic50"] < 1000]
+            mhc_ii_col = "mhc_ii_ic50" if "mhc_ii_ic50" in df_mhc_ii.columns else None
+            mhc_ii_binders = pd.DataFrame()
+            if mhc_ii_col:
+                mhc_ii_binders = df_mhc_ii[df_mhc_ii[mhc_ii_col] < 1000]
             col_c, col_d = st.columns(2)
 
             with col_c:
