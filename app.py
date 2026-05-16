@@ -404,7 +404,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.1.0",
+    page_title="MM Vaccine Designer - v2.1.8 - LIVE",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
