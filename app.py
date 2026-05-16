@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -479,30 +479,41 @@ st.markdown("""
 # ── Helper functions ─────────────────────────────────────────────────
 
 def load_patient_data(patient_id: str, data_type: str = "enhanced") -> pd.DataFrame:
-    """Load pre-computed results for a patient."""
-    paths = {
-        "enhanced": f"output/{patient_id}_enhanced/enhanced_predictions.csv",
-        "binding": f"output/{patient_id}_mhcflurry/binding_predictions.csv",
-        "mhc_ii": f"output/{patient_id}_enhanced/mhc_ii_predictions.csv",
-        "top": f"output/{patient_id}_enhanced/top_candidates.csv",
-        "dual": f"output/{patient_id}_enhanced/dual_mhc_binders.csv",
-        "epitopes": f"output/{patient_id}_mhcflurry/selected_epitopes.csv",
-    }
-    path = paths.get(data_type, "")
-    if os.path.exists(path):
-        try:
-            return pd.read_csv(path)
-        except pd.errors.EmptyDataError:
-            return pd.DataFrame()
+    """Load pre-computed results for a patient.
+    Checks multiple possible output directory structures.
+    """
+    # Try different path patterns
+    path_patterns = [
+        f"output/{patient_id}_enhanced/{data_type}_predictions.csv",
+        f"output/{patient_id}_mhcflurry/{data_type}_predictions.csv",
+        f"output/{patient_id}/{data_type}_predictions.csv",
+        f"output/{patient_id}_enhanced/selected_epitopes.csv",
+        f"output/{patient_id}_mhcflurry/selected_epitopes.csv",
+        f"output/{patient_id}/selected_epitopes.csv",
+        f"output/{patient_id}_enhanced/enhanced_predictions.csv",
+        f"output/{patient_id}/enhanced_predictions.csv",
+    ]
+    for path in path_patterns:
+        if os.path.exists(path):
+            try:
+                df = pd.read_csv(path)
+                if not df.empty:
+                    return df
+            except (pd.errors.EmptyDataError, Exception):
+                continue
     return pd.DataFrame()
 
 
 def load_vaccine_report(patient_id: str) -> str:
-    """Load vaccine report text."""
-    path = f"output/{patient_id}_mhcflurry/vaccine_report.txt"
-    if os.path.exists(path):
-        with open(path) as f:
-            return f.read()
+    """Load vaccine report text from multiple possible locations."""
+    for path in [
+        f"output/{patient_id}_mhcflurry/vaccine_report.txt",
+        f"output/{patient_id}/vaccine_report.txt",
+        f"output/{patient_id}_enhanced/vaccine_report.txt",
+    ]:
+        if os.path.exists(path):
+            with open(path) as f:
+                return f.read()
     return ""
 
 
@@ -652,6 +663,12 @@ def get_available_patients():
             if d.is_dir() and d.name.endswith("_enhanced"):
                 pid = d.name.replace("_enhanced", "")
                 patients.append(pid)
+            elif d.is_dir() and d.name.startswith("mmrf_"):
+                # Also check main output dir for patients with full pipeline runs
+                if (d / "selected_epitopes.csv").exists():
+                    pid = d.name
+                    if pid not in patients:
+                        patients.append(pid)
     # Also scan data/ for new patients without output yet
     data_dir = Path("data")
     if data_dir.exists():
@@ -670,9 +687,19 @@ with st.sidebar:
     st.markdown("---")
 
     patients = get_available_patients()
+
+    # Default to the patient with the most complete results
+    best_patient = "mmrf_1796"
+    default_idx = 0
+    for i, p in enumerate(patients):
+        if p == best_patient:
+            default_idx = i
+            break
+
     selected_patient = st.selectbox(
         "Select Patient",
         patients,
+        index=default_idx,
         format_func=lambda x: x.upper().replace("_", " "),
     )
 
