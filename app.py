@@ -167,7 +167,7 @@ def run_uploaded_pipeline(uploaded_file):
         return
 
     # Progress bar
-    progress = st.progress(0, text="Parsing mutations...")
+    progress = st.progress(0)
     status = st.empty()
 
     alleles = list(PSSM_MODELS.keys())
@@ -196,7 +196,7 @@ def run_uploaded_pipeline(uploaded_file):
                 "is_driver_gene": gene in MM_DRIVERS,
             })
 
-        progress.progress((idx + 1) / len(raw_df), text=f"Parsing mutations... {idx+1}/{len(raw_df)}")
+        progress.progress((idx + 1) / len(raw_df))
 
     if not all_candidates:
         st.error("No peptide candidates could be generated. Check aa_change format (e.g. E196K or p.E196K).")
@@ -212,7 +212,7 @@ def run_uploaded_pipeline(uploaded_file):
     )
 
     # Step 2: Binding predictions
-    progress.progress(0, text="Running binding predictions...")
+    progress.progress(0)
     all_results = []
     total_preds = n_candidates * len(alleles)
     pred_count = 0
@@ -240,14 +240,13 @@ def run_uploaded_pipeline(uploaded_file):
             })
             pred_count += 1
             if pred_count % 500 == 0:
-                progress.progress(pred_count / total_preds,
-                                  text=f"Predicting binding... {pred_count}/{total_preds}")
+                progress.progress(pred_count / total_preds)
 
     results_df = pd.DataFrame(all_results)
     binders = results_df[results_df["ic50_nM"] < 500]
     strong = results_df[results_df["ic50_nM"] < 50]
 
-    progress.progress(1.0, text="Analysis complete!")
+    progress.progress(1.0)
 
     # Step 3: Display results
     st.markdown("---")
