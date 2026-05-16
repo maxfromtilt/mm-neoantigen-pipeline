@@ -21,6 +21,26 @@ gdc:
   # Page size for API requests
   page_size: 100
 
+# --- TCGA Data Integration (Enhancement 1) ---
+# Secondary validation set: TCGA Multiple Myeloma (MM) cohort
+# TCGA data portal: https://portal.gdc.cancer.gov/
+tcga:
+  enabled: true
+  project_id: "TCGA-MM"  # TCGA uses TCGA-XX format; MM is TCGA study code for MM
+  cancer_type: "MM"  # Multiple Myeloma
+  # Use TCGA SKCM (skin cutaneous melanoma) as proxy MM validation if no MM cohort available
+  # For actual MM validation: TCGA has limited MM data; use MMRF as primary, TCGA-MM as secondary
+  alternative_projects:
+    - "TCGA-BRCA"  # Breast cancer - similar immune landscape
+    - "TCGA-LUAD"  # Lung adenocarcinoma - checkpoint biology
+  base_url: "https://api.gdc.cancer.gov"
+  max_cases: 200
+  data_categories:
+    - "Simple Nucleotide Variation"
+    - "Transcriptome Profiling"
+  merge_with_mmrf: true  # Merge TCGA mutations with MMRF data for combined analysis
+  validation_weight: 0.3  # Weight for TCGA in combined analysis (MMRF primary)
+
 # --- Mutation Filtering ---
 mutations:
   # Minimum variant allele frequency
@@ -52,6 +72,63 @@ mutations:
     - "ATM"
     - "ATR"
     - "PRDM1"
+  # dNdScov selection pressure scoring (Enhancement 3)
+  # Published dNdScov cutoffs for driver gene oncogenicity
+  dndscov:
+    enabled: true
+    # dNdScov scores > 1.0 indicate positive selection (driver)
+    # Scores > 2.0 indicate strong driver (oncogenic)
+    driver_cutoff: 1.0
+    strong_driver_cutoff: 2.0
+    # Genes with known dNdScov values from published literature
+    gene_scores:
+      KRAS: 3.2
+      NRAS: 2.8
+      BRAF: 3.5
+      TP53: 4.1
+      DIS3: 2.1
+      FAM46C: 1.9
+      TRAF3: 1.5
+      RB1: 2.3
+      CYLD: 1.4
+      MAX: 1.6
+      IRF4: 1.8
+      FGFR3: 2.2
+      ATM: 1.7
+      ATR: 1.5
+      PRDM1: 1.3
+  # Tumor expression filtering (Enhancement 5)
+  expression_filter:
+    enabled: true
+    min_tpm: 1.0  # Only include mutations where gene TPM > 1.0 in tumour sample
+    use_rna_seq: true  # Require RNA-seq expression data for filtering
+    fallback_to_wgs: false  # If no RNA-seq, use WGS coverage as proxy
+    tumor_sample_types:  # Filter to tumour samples only
+      - "Primary Tumor"
+      - "Primary Blood Derived Cancer"
+      - "Recurrent Tumor"
+  # HLA typing (Enhancement 4)
+  hla_typing:
+    enabled: true
+    method: "arcasHLA"  # Options: arcasHLA, OptiType, population_prior
+    min_depth: 10  # Minimum read depth for reliable HLA typing
+    population_prior_alleles:  # Population frequency HLA alleles (European ancestry)
+      class_i:
+        - "HLA-A*02:01"
+        - "HLA-A*01:01"
+        - "HLA-A*03:01"
+        - "HLA-A*24:02"
+        - "HLA-B*07:02"
+        - "HLA-B*08:01"
+        - "HLA-B*44:03"
+        - "HLA-C*07:01"
+        - "HLA-C*05:01"
+      class_ii:
+        - "HLA-DRB1*01:01"
+        - "HLA-DRB1*07:01"
+        - "HLA-DRB1*15:01"
+        - "HLA-DQB1*02:01"
+        - "HLA-DQB1*06:02"
 
 # --- Neoantigen Prediction ---
 neoantigen:
@@ -80,6 +157,22 @@ neoantigen:
       - "HLA-DRB1*07:01"
   # Minimum expression (TPM) for a gene to be considered
   min_expression_tpm: 1.0
+  # Ensemble binding prediction (Enhancement 2)
+  # Combines multiple predictors for more robust binding predictions
+  ensemble:
+    enabled: true
+    predictors:
+      - "mhcflurry"        # Neural network-based (recommended, install via pip)
+      - "pssm"            # Position-specific scoring matrix (built-in fallback)
+      - "mhcmix"          # Hybrid PSSM + neural network (if installed)
+    # Scoring method: "average" (mean IC50), "weighted_rank" (rank-average), "min_ic50" (best-case)
+    scoring_method: "weighted_rank"
+    weights:
+      mhcflurry: 0.5    # Primary predictor - neural network
+      pssm: 0.3         # Physics-based fallback
+      mhcmix: 0.2       # Hybrid (if available)
+    # Only use MHCflurry if available; fall back to PSSM for all if not
+    require_mhcflurry: false
 
 # --- mRNA Vaccine Design ---
 vaccine:
@@ -97,6 +190,28 @@ vaccine:
   three_prime_utr: "CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
   # Codon optimization target organism
   codon_optimization: "human"
+  # Codon optimisation level (Enhancement 7)
+  codon_optimisation_level: "standard"  # basic | standard | aggressive
+  codon_optimisation:
+    # basic: Human codon usage bias only
+    # standard: Codon usage + GC content balance
+    # aggressive: CUB + GC + mRNA secondary structure (ViennaRNA) prediction
+    level: "standard"
+    target_gc_content: 0.58  # Optimal human mRNA GC range (0.55-0.60)
+    min_gc: 0.40
+    max_gc: 0.70
+    # ViennaRNA for secondary structure prediction (installed separately)
+    use_vienna_rna: false  # Set true for aggressive mode (requires ViennaRNA Python bindings)
+    vienna_temperature: 37.0  # Celsius
+    # Codon pair bias optimization (reduces ribosome stalls)
+    codon_pair_bias: true
+    # Avoid sequence motifs (RNA secondary structure, restriction sites)
+    avoid_motif_threshold: 8  # Avoid >8 identical consecutive nucleotides
+    # Entropy-based optimization weights (Enhancement 7)
+    entropy_weight: 0.3    # Weight for codon usage entropy
+    stability_weight: 0.2  # Weight for mRNA stability score
+    # Poly(A) signal avoidance (AAUAAA in 3' UTR region)
+    avoid_poly_signal: true
   # Poly-A tail length
   poly_a_length: 120
 

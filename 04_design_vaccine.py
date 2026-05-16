@@ -32,7 +32,7 @@ import pandas as pd
 import numpy as np
 import yaml
 from pathlib import Path
-
+from codon_optimizer import CodonOptimizer
 
 # =============================================================================
 # Human Codon Usage Table (frequency per thousand)
@@ -195,35 +195,30 @@ def optimize_epitope_order(epitopes: List[str], linker: str) -> List[int]:
     return order
 
 
-def codon_optimize(protein_sequence: str) -> str:
+def codon_optimize(protein_sequence: str, level: str = "basic",
+                    target_gc_min: float = 0.40, target_gc_max: float = 0.70,
+                    target_gc_ideal: float = 0.58) -> tuple:
     """
-    Codon-optimize a protein sequence for human expression.
+    Codon-optimise a protein sequence using entropy-based approach.
 
-    Uses weighted random selection based on human codon usage frequencies,
-    with deterministic seeding for reproducibility.
+    Supports three levels: basic (CUB only), standard (CUB + GC balance),
+    aggressive (CUB + GC + mRNA secondary structure via ViennaRNA).
+
+    Returns (dna_sequence, score_dict) tuple.
     """
-    # Use sequence hash as seed for reproducibility
-    seed = int(hashlib.md5(protein_sequence.encode()).hexdigest()[:8], 16)
-    rng = np.random.RandomState(seed)
-
-    codons = []
-    for aa in protein_sequence:
-        if aa not in HUMAN_CODON_FREQ:
-            continue
-
-        codon_freqs = HUMAN_CODON_FREQ[aa]
-        codon_list = list(codon_freqs.keys())
-        freq_list = list(codon_freqs.values())
-
-        # Normalize frequencies
-        total = sum(freq_list)
-        probs = [f / total for f in freq_list]
-
-        # Weighted selection (biased toward most frequent)
-        selected = rng.choice(codon_list, p=probs)
-        codons.append(selected)
-
-    return "".join(codons)
+    optimizer = CodonOptimizer(
+        organism="human",
+        level=level,
+        target_gc_min=target_gc_min,
+        target_gc_max=target_gc_max,
+        target_gc_ideal=target_gc_ideal,
+        codon_pair_bias=True,
+        avoid_motif_threshold=8,
+        avoid_poly_signal=True,
+    )
+    dna = optimizer.optimize(protein_sequence)
+    scores = optimizer.score_sequence(dna)
+    return dna, scores
 
 
 def build_mrna_construct(epitopes: List[str], config: dict) -> Dict:
@@ -251,6 +246,13 @@ def build_mrna_construct(epitopes: List[str], config: dict) -> Dict:
                                     "CTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     poly_a_length = vaccine_config.get("poly_a_length", 120)
 
+    # Read codon optimisation settings from config
+    codon_cfg = vaccine_config.get("codon_optimisation", {})
+    opt_level = codon_cfg.get("level", "standard")
+    opt_gc_min = codon_cfg.get("min_gc", 0.40)
+    opt_gc_max = codon_cfg.get("max_gc", 0.70)
+    opt_gc_ideal = codon_cfg.get("target_gc_content", 0.58)
+
     # Optimize epitope order
     order = optimize_epitope_order(epitopes, linker)
     ordered_epitopes = [epitopes[i] for i in order]
@@ -258,8 +260,14 @@ def build_mrna_construct(epitopes: List[str], config: dict) -> Dict:
     # Build protein cassette
     cassette_protein = signal_peptide + linker.join(ordered_epitopes)
 
-    # Codon-optimize the cassette
-    cassette_dna = codon_optimize(cassette_protein)
+    # Apply entropy-based codon optimisation (config-driven level)
+    cassette_dna, cassette_scores = codon_optimize(
+        cassette_protein,
+        level=opt_level,
+        target_gc_min=opt_gc_min,
+        target_gc_max=opt_gc_max,
+        target_gc_ideal=opt_gc_ideal,
+    )
 
     # Add stop codon
     stop_codon = "TGA"  # Most common human stop codon
@@ -292,10 +300,20 @@ def build_mrna_construct(epitopes: List[str], config: dict) -> Dict:
         "three_prime_utr": three_utr,
         "poly_a_length": poly_a_length,
         "n_epitopes": len(ordered_epitopes),
+        "codon_optimisation_level": opt_level,
+        "cassette_cub_score": cassette_scores["cub_score"],
+        "cassette_gc_content": cassette_scores["gc_content"],
+        "cassette_mfe_kcal_mol": (
+            cassette_scores["mfe_rnafold_kcal_mol"]
+            if cassette_scores["mfe_rnafold_kcal_mol"] is not None
+            else cassette_scores["mfe_estimate_kcal_mol"]
+        ),
+        "cassette_stability_score": cassette_scores["stability_score"],
+        "cassette_motif_runs": cassette_scores["motif_runs"],
         "modifications": [
             "5' Cap: m7GpppN (Cap1 structure)",
             "All uridines: N1-methylpseudouridine (m1Ψ)",
-            "Codon optimization: Human codon usage bias",
+            f"Codon optimisation: {opt_level} (CUB + GC balance)",
         ],
     }
 
@@ -317,8 +335,16 @@ def generate_vaccine_report(construct: Dict, epitopes_df: pd.DataFrame,
     lines.append(f"  Number of epitopes:        {construct['n_epitopes']}")
     lines.append(f"  Protein cassette length:   {construct['cassette_protein_length']} amino acids")
     lines.append(f"  mRNA length:               {construct['mrna_length_nt']} nucleotides")
-    lines.append(f"  GC content:                {construct['gc_content']:.1%}")
-    lines.append(f"  Estimated MW:              {construct['estimated_molecular_weight_kda']} kDa")
+    lines.append(f"  Codon optimisation level:   {construct['codon_optimisation_level']}")
+    lines.append(f"  CUB score (cassette):      {construct['cassette_cub_score']}")
+    lines.append(f"  GC content (cassette):     {construct['cassette_gc_content']:.1%}")
+    mfe_val = construct.get('cassette_mfe_kcal_mol')
+    lines.append(f"  MFE (cassette):            {mfe_val} kcal/mol"
+                 if mfe_val is not None
+                 else "  MFE (cassette):            N/A (ViennaRNA unavailable)")
+    lines.append(f"  Stability score:           {construct['cassette_stability_score']}")
+    motif_runs = construct.get('cassette_motif_runs', [])
+    lines.append(f"  Homopolymer runs:          {len(motif_runs)} (threshold >=8)")
     lines.append(f"  Linker sequence:           {construct['linker_sequence']}")
 
     lines.append(f"\n{'─' * 78}")
@@ -449,7 +475,10 @@ def main():
     print(f"    Epitopes: {construct['n_epitopes']}")
     print(f"    Protein length: {construct['cassette_protein_length']} aa")
     print(f"    mRNA length: {construct['mrna_length_nt']} nt")
-    print(f"    GC content: {construct['gc_content']:.1%}")
+    print(f"    Codon optimisation: {construct['codon_optimisation_level']}")
+    print(f"    CUB score: {construct['cassette_cub_score']}")
+    print(f"    GC content: {construct['cassette_gc_content']:.1%}")
+    print(f"    Stability score: {construct['cassette_stability_score']}")
     print(f"    Estimated MW: {construct['estimated_molecular_weight_kda']} kDa")
 
     # Generate report
