@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -405,7 +405,7 @@ def run_uploaded_pipeline(uploaded_file):
 
 # ── Page config ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MM Neoantigen Vaccine Designer v2.0.2",
+    page_title="MM Neoantigen Vaccine Designer v2.0.3",
     page_icon="⟠ ",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -419,7 +419,7 @@ import sys
 sys.excepthook = handle_error
 
 # ── Version ─────────────────────────────────────────────────────────
-st.sidebar.markdown("**Version 2.0.2** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
+st.sidebar.markdown("**Version 2.0.3** — Enhanced: TCGA, dNdScov, HLA typing, expression filter, trial matching, codon optimisation")
 
 # ── Custom CSS ───────────────────────────────────────────────────────
 st.markdown("""
@@ -526,7 +526,15 @@ def get_available_patients():
             if d.is_dir() and d.name.endswith("_enhanced"):
                 pid = d.name.replace("_enhanced", "")
                 patients.append(pid)
-    return sorted(patients) if patients else ["mmrf_1251", "mmrf_1274"]
+    # Also scan data/ for new patients without output yet
+    data_dir = Path("data")
+    if data_dir.exists():
+        for f in data_dir.iterdir():
+            if f.name.startswith("mmrf_") and f.name.endswith("_mutations.csv"):
+                pid = f.stem  # e.g. mmrf_MMRF_2240
+                if pid not in patients:
+                    patients.append(pid)
+    return sorted(patients, key=lambda x: x.replace("mmrf_","")) if patients else ["mmrf_1251", "mmrf_1274"]
 
 
 # ── Sidebar ──────────────────────────────────────────────────────────

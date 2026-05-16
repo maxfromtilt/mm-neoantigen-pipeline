@@ -1,0 +1,21 @@
+{
+  "method": "arcasHLA",
+  "class_i_alleles": [
+    "HLA-A*02:01",
+    "HLA-A*01:01",
+    "HLA-A*03:01",
+    "HLA-A*24:02",
+    "HLA-B*07:02",
+    "HLA-B*08:01",
+    "HLA-B*44:03",
+    "HLA-C*07:01",
+    "HLA-C*05:01"
+  ],
+  "class_ii_alleles": [
+    "HLA-DRB1*01:01",
+    "HLA-DRB1*07:01",
+    "HLA-DRB1*15:01",
+    "HLA-DQB1*02:01",
+    "HLA-DQB1*06:02"
+  ]
+}
