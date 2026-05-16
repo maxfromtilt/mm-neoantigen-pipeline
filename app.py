@@ -1,6 +1,6 @@
 """
 
-__version__ = "2.1.3"
+__version__ = "2.1.4"
 MM Neoantigen Vaccine Designer — Interactive Dashboard
 ========================================================
 A web-based interface for the Multiple Myeloma personalised
@@ -878,7 +878,7 @@ if not df_enhanced.empty:
     if "clonality" in df_enhanced.columns:
         clonal_count = len(df_enhanced[
             (df_enhanced.get("clonality", "") == "clonal") &
-            (df_enhanced["ic50_nM"] < 500)
+            (df_enhanced["ic50_nM"].fillna(99999) < 500)
         ])
 
     # TMB calculation
