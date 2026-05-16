@@ -61,6 +61,34 @@ STEPS = [
         "description": "Run benchmark validation with COSMIC/IEDB cross-referencing and safety screening",
         "outputs": ["output/validation/benchmark_results.csv", "output/validation/validation_vaccine_report.txt"],
     },
+    {
+        "number": 9,
+        "name": "TCR Repertoire Integration",
+        "script": "09_tcr_repertoire.py",
+        "description": "Link predicted epitopes to known reactive TCRs from VDJdb/McPAS-TCR/TCRdb",
+        "outputs": ["output/tcr_epitope_links.csv", "output/tcr_validation_report.csv"],
+    },
+    {
+        "number": 6,
+        "name": "cBioPortal Validation",
+        "script": "08_cbioportal.py",
+        "description": "Validate epitopes against real-world MM cohort mutation frequency and survival data via cBioPortal API",
+        "outputs": ["output/cbioportal_mutations.csv", "output/cbioportal_validation.csv"],
+    },
+    {
+        "number": 6,
+        "name": "Ligandomics Validation",
+        "script": "07_ligandomics.py",
+        "description": "Validate predicted epitopes against HLA ligandomics mass-spec data (PRIDE + HMB)",
+        "outputs": ["output/ligandomics_validation.csv", "output/ligandomics_cache"],
+    },
+    {
+        "number": 7,
+        "name": "PeptideAtlas Proteomics Validation",
+        "script": "10_peptide_atlas.py",
+        "description": "Validate protein expression via PeptideAtlas and PRIDE mass-spec databases",
+        "outputs": ["output/proteomics/proteomics_validation.csv", "output/proteomics/epitope_proteome_coverage.csv"],
+    },
 ]
 
 

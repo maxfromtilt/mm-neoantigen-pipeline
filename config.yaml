@@ -224,3 +224,52 @@ output:
   formats:
     - "csv"
     - "json"
+
+# --- HLA Ligandomics Mass-Spec Data (Enhancement 8) ---
+# Integrates PRIDE and HMB mass-spec validated HLA-bound peptide data
+# to confirm computationally predicted epitopes with experimental evidence
+ligandomics:
+  enabled: true
+  pridesearch_api: "https://www.ebi.ac.uk/pride/ws/archive/v2"
+  hmb_api: "https://www.hmadb.org"
+  cancer_types:
+    - "multiple myeloma"
+    - "hematological malignancy"
+  min_mass_spec_evidence: 2  # minimum peptide count to include
+  validation_boost: 20  # extra score points for mass-spec validated epitopes
+
+# --- cBioPortal Integration (Enhancement 8) ---
+# Validates predicted neoantigens against real-world MM patient cohorts
+cbioportal:
+  enabled: true
+  api_base: "https://api.cbioportal.org/v2.0.0"
+  cancer_study_ids:
+    - "mm"           # Multiple Myeloma (CoMMpass-aligned)
+    - "laml"         # Acute Myeloid Leukemia proxy (haematopoietic)
+  max_patients: 500
+  survival_data: true
+  mutation_frequency_boost: true
+
+# --- PeptideAtlas / PRIDE Proteomics Validation (Enhancement 10) ---
+peptide_atlas:
+  enabled: true
+  base_url: "https://www.peptideatlas.org/api/v1"
+  pride_base_url: "https://www.ebi.ac.uk/pride/ws/archive/v2"
+  protein_detection_threshold: 1   # minimum experiments detecting protein
+  expression_confidence_boost: 8  # score boost for confirmed protein expression
+
+# --- TCR Repertoire Integration (Enhancement 9) ---
+tcr:
+  enabled: true
+  # TCR database endpoints (fallback to curated fallback data if APIs unreachable)
+  vdjdb_api: "https://vdjdb.cvrgr.org/"
+  mcpas_api: "http://friedmanburg.com/McPAS-TCR/"
+  tcrdb_api: "http://tbis.tech/"
+  # Minimum TCR matches required to flag epitope as "has known TCR"
+  min_tcr_count: 1
+  # Score boost for epitope with at least one known reactive TCR
+  tcr_boost: 15
+  # Score boost for epitope with structurally similar (cross-reactive) analogue
+  cross_reactive_boost: 10
+  # Sequence similarity thresholds
+  sim_match_min_shared: 7  # shared AA for cross-reactivity call

@@ -6,7 +6,185 @@ Entries are grouped by enhancement number and sorted by date (newest first).
 
 ---
 
-## [Unreleased] — Pipeline Enhancements 6 & 7
+## [Unreleased] — Enhancement 11: TCR Repertoire Integration
+
+**Date:** 2026-05-16
+**Files created:** `09_tcr_repertoire.py`
+**Files modified:** `config.yaml`, `05_run_pipeline.py`, `CHANGELOG.md`
+
+- New pipeline step querying three public TCR databases:
+  - **VDJdb** (`https://vdjdb.cvrgr.org/`) — annotated TCR–epitope pairs via GitHub release dataset
+  - **McPAS-TCR** (`http://friedmanburg.com/McPAS-TCR/`) — pathology-associated TCR sequences
+  - **TCRdb** (`http://tbis.tech/`) — general T-cell receptor repository
+- For each epitope in `output/selected_epitopes.csv`, searches all three DBs for known reactive TCRs
+- **Exact epitope matching** via sequence-indexed lookup (O(1) per epitope)
+- **Cross-reactivity detection** via positional amino-acid identity (>=7 shared AA) and Levenshtein edit distance (<=2), flagging molecular mimicry analogues
+- **TCR_reactivity_score** boost applied to `vaccine_priority_score`: +15 for known reactive TCR, +10 for cross-reactive analogue
+- **Outputs:**
+  - `output/tcr_epitope_links.csv` — epitope, tcr_alpha, tcr_beta, v_gene, epitope_source, affinityKd, reactiveness_score, match_type, database, cross_reactive flag
+  - `output/tcr_validation_report.csv` — per-epitope summary: has_known_tcr, tcr_count, cross_reactive_analogs, clinical_relevance
+  - `output/selected_epitopes_tcr_enriched.csv` — original epitopes with TCR score columns merged
+  - `output/tcr_validation_report.txt` — human-readable summary
+- **Fallback curated data** for all three DBs when APIs are unreachable (MM-relevant TCR–epitope pairs for KRAS G12V/D, TP53 hotspot, BRAF V600E, FGFR3, NY-ESO-1, MAGE-A3, WT1, and common viral epitopes)
+- VDJdb segments fetched from GitHub raw URL as backup when release zip is unavailable
+- `cross_reactivity_flag` column added to enriched epitope output for downstream vaccine design
+- `vaccine_priority_score` updated to include TCR contribution
+
+**config.yaml — new `tcr` section:**
+```yaml
+tcr:
+  enabled: true
+  vdjdb_api: "https://vdjdb.cvrgr.org/"
+  mcpas_api: "http://friedmanburg.com/McPAS-TCR/"
+  tcrdb_api: "http://tbis.tech/"
+  min_tcr_count: 1
+  tcr_boost: 15
+  cross_reactive_boost: 10
+  sim_match_min_shared: 7
+```
+
+---
+
+## [Unreleased] — Enhancement 10: PeptideAtlas / PRIDE Proteomics Validation
+
+**Date:** 2026-05-16
+**Files created:** `10_peptide_atlas.py`
+**Files modified:** `config.yaml` (added `peptide_atlas` section), `05_run_pipeline.py` (added step 7)
+
+- New standalone step added to the pipeline (step 7)
+- Queries **PeptideAtlas** (https://www.peptideatlas.org/api/v1) for protein detection
+  status across hundreds of shotgun proteomics experiments, confirming whether
+  gene products containing predicted neoepitopes are actually detected in
+  real human tissue by mass spectrometry
+- Queries **PRIDE** (https://www.ebi.ac.uk/pride/ws/archive/v2) as a secondary
+  proteomics resource, supplementing PeptideAtlas with additional experiment coverage
+- Performs **epitope-level proteome coverage check** -- validates that the exact
+  mutant peptide sequence appears in PeptideAtlas's non-redundant peptide library
+- **Expression confidence tiers** (High / Medium / Low / Not Detected) derived from
+  peptide count and experiment count per gene
+- **Priority score boost** applied to `vaccine_priority_score` for proteins with
+  confirmed expression (configurable via `expression_confidence_boost`, default 8 points)
+- Includes retry logic and rate limiting (0.25s delay between queries) to respect
+  public API resources
+
+**Outputs:**
+- `output/proteomics/proteomics_validation.csv` -- per-gene protein detection summary
+  with tissue types, experiment counts, and confidence scores
+- `output/proteomics/epitope_proteome_coverage.csv` -- per-epitope proteome evidence
+  showing which mutant peptides are confirmed in the proteome
+- `output/proteomics/proteomics_report.txt` -- human-readable ranked report with
+  tissue breakdown
+
+**Config additions (`config.yaml`):**
+```yaml
+peptide_atlas:
+  enabled: true
+  base_url: "https://www.peptideatlas.org/api/v1"
+  pride_base_url: "https://www.ebi.ac.uk/pride/ws/archive/v2"
+  protein_detection_threshold: 1
+  expression_confidence_boost: 8
+```
+
+**Pipeline integration:** Added as step 7 in `05_run_pipeline.py`, to be run
+after the Ligandomics validation step. Can be run standalone:
+`python 10_peptide_atlas.py --input output/selected_epitopes.csv`
+
+---
+
+## [Unreleased] — Enhancement 9: cBioPortal Integration
+
+**Date:** 2026-05-16
+**Files created:** `08_cbioportal.py`
+**Files modified:** `config.yaml`, `05_run_pipeline.py`
+
+#### New module: `08_cbioportal.py`
+
+- Queries the cBioPortal public API v2 (`https://api.cbioportal.org/v2.0.0`) to fetch real-world MM patient cohort data:
+  - Study listing and patient counts
+  - Per-gene mutation counts across studies (paginated, capped at `max_patients`)
+  - Overall survival (OS) and progression-free survival (PFS) per patient via clinical records endpoint
+- Builds a **mutation-frequency database**: genes × frequency across cohorts, weighted by cohort size
+- **Validates predicted epitopes** against the cohort: for each epitope's gene, retrieves real-world MM mutation frequency and survival signal
+- Computes `clinical_relevance_score` = `frequency * 100 * survival_modifier` (clamped 0.5-2.0x) -- epitopes in frequently mutated, long-survival genes score highest
+- Survival modifier: genes associated with longer-than-median OS get up to 2x boost (immune-responsive patients tend to be better vaccine candidates)
+- Falls back to known MM driver gene list if API is unreachable
+
+#### Outputs
+
+| File | Description |
+|------|-------------|
+| `output/cbioportal_mutations.csv` | gene, mutation_frequency, patient_count, median_survival_months |
+| `output/cbioportal_validation.csv` | epitope_sequence, gene, hla_allele, frequency_in_mm_cohort, clinical_relevance_score, survival_signal |
+
+#### `config.yaml` -- new `cbioportal` section
+
+```yaml
+cbioportal:
+  enabled: true
+  api_base: "https://api.cbioportal.org/v2.0.0"
+  cancer_study_ids:
+    - "mm"          # Multiple Myeloma
+    - "laml"        # Acute Myeloid Leukemia proxy
+  max_patients: 500
+  survival_data: true
+  mutation_frequency_boost: true
+```
+
+#### `05_run_pipeline.py` changes
+
+- Added step 6: "cBioPortal Validation" -- runs `08_cbioportal.py` after pipeline validation
+- Outputs wired into `output/cbioportal_mutations.csv` and `output/cbioportal_validation.csv`
+
+---
+
+## [Unreleased] — Enhancement 8: HLA Ligandomics Mass-Spec Data Integration
+
+**Date:** 2026-05-16
+**Files created:** `07_ligandomics.py`
+**Files modified:** `config.yaml`, `05_run_pipeline.py`
+
+### New module: `07_ligandomics.py`
+
+- Fetches mass-spec validated HLA-bound peptides from **PRIDE** (European Proteomics
+  Research Institute, `https://www.ebi.ac.uk/pride/ws/archive/v2`) and **HMB**
+  (Human Myelome Database, `https://www.hmadb.org`) via their public APIs.
+- Builds a sequence-indexed lookup of experimental HLA-I ligand data for multiple
+  myeloma and hematological malignancies.
+- **Validates computationally predicted epitopes** from `binding_predictions.csv`
+  against the mass-spec index: checks if any predicted MHC-I-binding peptide appears
+  in the experimental PRIDE/HMB dataset.
+- **Score boost**: epitopes with ≥2 independent MS experiments supporting HLA binding
+  receive a configurable +20 point boost to `vaccine_priority_score` (configurable via
+  `ligandomics.validation_boost` in `config.yaml`).
+- Re-ranks all candidates after boosting.
+- **JSON cache** at `output/ligandomics_cache/pride_peptides.json` and
+  `output/ligandomics_cache/hmb_peptides.json` — re-used on subsequent runs unless
+  `--force-refresh` is passed.
+- **Standalone mode**: `--standalone` flag fetches and caches MS data without requiring
+  a `binding_predictions.csv` input.
+
+### `config.yaml` — new `ligandomics` section
+
+```yaml
+ligandomics:
+  enabled: true
+  pridesearch_api: "https://www.ebi.ac.uk/pride/ws/archive/v2"
+  hmb_api: "https://www.hmadb.org"
+  cancer_types:
+    - "multiple myeloma"
+    - "hematological malignancy"
+  min_mass_spec_evidence: 2  # minimum peptide count to include
+  validation_boost: 20  # extra score points for mass-spec validated epitopes
+```
+
+### `05_run_pipeline.py` — new step 6 added
+
+Step 6 runs `07_ligandomics.py` after pipeline validation. Disabled via
+`ligandomics.enabled: false` in config to skip without editing the orchestrator.
+
+---
+
+## [Enhancement 6 & 7] — 2026-05-16
 
 ### Enhancement 6 — Clinical Trial Matching (`06_trial_matching.py`)
 
